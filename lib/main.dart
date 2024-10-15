@@ -12,13 +12,13 @@ void main() async {
   {
     await Firebase.initializeApp(
         options: const FirebaseOptions(
-          apiKey: "AIzaSyCshEiCNgnxVom9aogZY0KaSSJSJTVZIPw",
-          authDomain: "flutter-midtern.firebaseapp.com",
-          projectId: "flutter-midtern",
-          storageBucket: "flutter-midtern.appspot.com",
-          messagingSenderId: "821785601438",
-          appId: "1:821785601438:web:15770d6e505c8e0968628f",
-          measurementId: "G-LX26HHQ4VN"
+          apiKey: "AIzaSyBDWES4OBArWtF03KShqfVt2G2abpAiRc4",
+          authDomain: "flutter-midtern-75f13.firebaseapp.com",
+          projectId: "flutter-midtern-75f13",
+          storageBucket: "flutter-midtern-75f13.appspot.com",
+          messagingSenderId: "31210369349",
+          appId: "1:31210369349:web:d6b599305ddfad80f74e2c",
+          measurementId: "G-53XQCHKJ5V"
       )
     );
   }
@@ -63,7 +63,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       theme: ThemeData(useMaterial3: false),
       debugShowCheckedModeBanner: false,
-      home: AddToDo(),
+      home: currentPage,
     );
   }
 }

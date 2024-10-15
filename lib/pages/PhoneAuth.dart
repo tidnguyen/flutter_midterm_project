@@ -52,7 +52,7 @@ class _PhoneauthState extends State<Phoneauth> {
                         child: Container(height: 1, color: Colors.grey),
                       ),
                       Text(
-                        " Enter 5 Digit OTP ",
+                        " Enter 6 Digit OTP ",
                         style: TextStyle(fontSize: 20, color: Colors.black),
                       ),
                       Expanded(
@@ -138,7 +138,7 @@ class _PhoneauthState extends State<Phoneauth> {
 
   Widget otpField() {
     return OtpTextField(
-      numberOfFields: 5,
+      numberOfFields: 6,
       borderColor: Color(0xFF512DA8),
       borderWidth: 4.0,
       fieldWidth: 60,
