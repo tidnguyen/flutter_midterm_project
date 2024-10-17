@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "31210369349",
-    "project_id": "flutter-midtern-75f13",
-    "storage_bucket": "flutter-midtern-75f13.appspot.com"
+    "project_number": "686598240384",
+    "project_id": "mid-tern",
+    "storage_bucket": "mid-tern.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:31210369349:android:71f001dadc0eb82cf74e2c",
+        "mobilesdk_app_id": "1:686598240384:android:e07ccb79ad803973fd4e65",
         "android_client_info": {
           "package_name": "com.example.flutter_midterm_project"
         }
       },
       "oauth_client": [
         {
-          "client_id": "31210369349-b2clfbmoisq84kavlc7qsta87f5g5lea.apps.googleusercontent.com",
+          "client_id": "686598240384-67uaa37dp212c7g246kvkmotkdq0u8mf.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBCUY_15qLfduR7spweSDx-41Wb4Uo_OPs"
+          "current_key": "AIzaSyB7VvxVZVl-tcE2ULFSqb_a6i1LbJMhOrk"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "31210369349-b2clfbmoisq84kavlc7qsta87f5g5lea.apps.googleusercontent.com",
+              "client_id": "686598240384-67uaa37dp212c7g246kvkmotkdq0u8mf.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
