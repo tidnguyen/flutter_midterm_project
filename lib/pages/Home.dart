@@ -18,6 +18,7 @@ class _HomeState extends State<Home> {
   final Stream<QuerySnapshot> _stream =
       FirebaseFirestore.instance.collection("Todo").snapshots();
   List<Select> selected = [];
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,21 +59,27 @@ class _HomeState extends State<Home> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {
-                      var instance =
-                          FirebaseFirestore.instance.collection("Todo");
-                      for (var i = 0; i < selected.length; i++) {
-                        if (selected[i].checkValue) {
-                          instance.doc(selected[i].id).delete();
-                        }
-                      }
-                    },
-                    icon: Icon(
-                      Icons.delete,
-                      color: Colors.red,
-                      size: 28,
-                    ),
-                  ),
+  onPressed: () async {
+    var instance = FirebaseFirestore.instance.collection("Todo");
+    for (var i = 0; i < selected.length; i++) {
+      if (selected[i].checkValue) {
+        await instance.doc(selected[i].id).delete().then((_) {
+        }).catchError((error) {
+        });
+      }
+    }
+
+    setState(() {
+      selected.removeWhere((element) => element.checkValue == true);
+    });
+  },
+  icon: Icon(
+    Icons.delete,
+    color: Colors.red,
+    size: 28,
+  ),
+),
+
                 ],
               ),
             ),
@@ -131,6 +138,11 @@ class _HomeState extends State<Home> {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
           }
+          List<DocumentSnapshot> documents = snapshot.data?.docs ?? [];
+
+          // Filter out any documents that were deleted
+          documents.removeWhere((doc) =>
+              selected.any((sel) => sel.id == doc.id && sel.checkValue));
           return ListView.builder(
             itemCount: snapshot.data?.docs.length,
             itemBuilder: (context, index) {
@@ -159,8 +171,12 @@ class _HomeState extends State<Home> {
                   iconData = Icons.run_circle_outlined;
                   iconColor = Colors.red;
               }
-              selected.add(
-                  Select(id: snapshot.data?.docs[index].id, checkValue: false));
+              if (selected.length <= index ||
+                  selected[index].id != snapshot.data?.docs[index].id) {
+                selected.add(
+                  Select(id: snapshot.data?.docs[index].id, checkValue: false),
+                );
+              }
               return InkWell(
                 onTap: () {
                   Navigator.push(
@@ -174,16 +190,18 @@ class _HomeState extends State<Home> {
                   );
                 },
                 child: Todocard(
-                  title: document["title"] == null
-                      ? "Hey There"
-                      : document["title"],
+                  title: document["title"] ?? "Hey There",
                   check: selected[index].checkValue,
                   iconBgColor: Colors.white,
                   iconColor: iconColor,
                   iconData: iconData,
                   time: "10 AM",
                   index: index,
-                  onChange: onChange,
+                  onChange: (bool? value, int? index) {
+                    setState(() {
+                      selected[index!].checkValue = value!;
+                    });
+                  },
                 ),
               );
             },
@@ -193,11 +211,11 @@ class _HomeState extends State<Home> {
     );
   }
 
-  void onChange(int index) {
-    setState(() {
-      selected[index].checkValue = !selected[index].checkValue;
-    });
-  }
+  // void onChange(int index) {
+  //   setState(() {
+  //     selected[index].checkValue = !selected[index].checkValue;
+  //   });
+  // }
 }
 
 class Select {

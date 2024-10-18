@@ -42,7 +42,7 @@ class Todocard extends StatelessWidget {
                 checkColor: Color(0xff0e3e26),
                 value: check,
                 onChanged: (bool? value) {
-                  onChange(index);
+                  onChange(value , index);
                 },
               ),
             ),
