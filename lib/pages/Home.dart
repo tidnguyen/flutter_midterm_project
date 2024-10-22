@@ -1,3 +1,4 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_midterm_project/Custom/ToDoCard.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_midterm_project/Service/Auth_Service.dart';
 import 'package:flutter_midterm_project/pages/AddToDo.dart';
 import 'package:flutter_midterm_project/pages/SignUp.dart';
 import 'package:flutter_midterm_project/pages/view_data.dart';
+import 'package:intl/intl.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -18,7 +20,10 @@ class _HomeState extends State<Home> {
   final Stream<QuerySnapshot> _stream =
       FirebaseFirestore.instance.collection("Todo").snapshots();
   List<Select> selected = [];
-  
+  DateTime? selectedDateTime;
+  DateTime currentDate =
+      DateTime.now(); // Thêm biến để lưu giá trị DateTime trả về từ AddToDo
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,35 +56,14 @@ class _HomeState extends State<Home> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Monday 21",
+                    DateFormat('EEEE dd', ).format(currentDate),
+                   
                     style: TextStyle(
                       fontSize: 33,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
                   ),
-                  IconButton(
-  onPressed: () async {
-    var instance = FirebaseFirestore.instance.collection("Todo");
-    for (var i = 0; i < selected.length; i++) {
-      if (selected[i].checkValue) {
-        await instance.doc(selected[i].id).delete().then((_) {
-        }).catchError((error) {
-        });
-      }
-    }
-
-    setState(() {
-      selected.removeWhere((element) => element.checkValue == true);
-    });
-  },
-  icon: Icon(
-    Icons.delete,
-    color: Colors.red,
-    size: 28,
-  ),
-),
-
                 ],
               ),
             ),
@@ -100,8 +84,17 @@ class _HomeState extends State<Home> {
           BottomNavigationBarItem(
             icon: InkWell(
               onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (builder) => AddToDo()));
+                // Điều hướng sang AddToDo và nhận DateTime trả về
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (builder) => AddToDo()),
+                ).then((_) {
+                  // Refresh data when coming back from AddToDo
+                    setState(() {
+    currentDate = DateTime.now(); // Update current date after returning
+  });
+
+                });// Cập nhật giao diện sau khi nhận DateTime
               },
               child: Container(
                 height: 52,
@@ -138,18 +131,28 @@ class _HomeState extends State<Home> {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
           }
-          List<DocumentSnapshot> documents = snapshot.data?.docs ?? [];
+          List<DocumentSnapshot<Object?>> documents = snapshot.data!.docs.cast<DocumentSnapshot<Object?>>();
 
-          // Filter out any documents that were deleted
+
+          // Loại bỏ các tài liệu đã bị xóa
           documents.removeWhere((doc) =>
               selected.any((sel) => sel.id == doc.id && sel.checkValue));
+                 for (var doc in documents) {
+            if (!selected.any((sel) => sel.id == doc.id)) {
+              selected.add(Select(id: doc.id, checkValue: false));
+            }
+          }
+
           return ListView.builder(
-            itemCount: snapshot.data?.docs.length,
+            itemCount: documents.length,
             itemBuilder: (context, index) {
               IconData iconData;
               Color iconColor;
+
               Map<String, dynamic> document =
-                  snapshot.data?.docs[index].data() as Map<String, dynamic>;
+                  documents[index].data() as Map<String, dynamic>;
+
+              // Chuyển đổi dữ liệu "Category" thành icon
               switch (document["Category"]) {
                 case "Food":
                   iconData = Icons.food_bank;
@@ -171,12 +174,21 @@ class _HomeState extends State<Home> {
                   iconData = Icons.run_circle_outlined;
                   iconColor = Colors.red;
               }
+
+              // Thêm mục vào danh sách lựa chọn nếu chưa có
               if (selected.length <= index ||
                   selected[index].id != snapshot.data?.docs[index].id) {
                 selected.add(
                   Select(id: snapshot.data?.docs[index].id, checkValue: false),
                 );
               }
+
+              DateTime? deadline = document["deadline"] != null
+                  ? DateTime.fromMicrosecondsSinceEpoch(document["deadline"])
+                  : null;
+              String formattedTime =
+                  deadline != null ? DateFormat('HH:mm').format(deadline) : '';
+
               return InkWell(
                 onTap: () {
                   Navigator.push(
@@ -184,7 +196,7 @@ class _HomeState extends State<Home> {
                     MaterialPageRoute(
                       builder: (builder) => ViewData(
                         document: document,
-                        id: snapshot.data?.docs[index].id,
+                        id: documents[index].id,
                       ),
                     ),
                   );
@@ -195,13 +207,8 @@ class _HomeState extends State<Home> {
                   iconBgColor: Colors.white,
                   iconColor: iconColor,
                   iconData: iconData,
-                  time: "10 AM",
+                  time: formattedTime,
                   index: index,
-                  onChange: (bool? value, int? index) {
-                    setState(() {
-                      selected[index!].checkValue = value!;
-                    });
-                  },
                 ),
               );
             },
@@ -210,12 +217,6 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-
-  // void onChange(int index) {
-  //   setState(() {
-  //     selected[index].checkValue = !selected[index].checkValue;
-  //   });
-  // }
 }
 
 class Select {
