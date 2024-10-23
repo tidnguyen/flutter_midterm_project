@@ -57,7 +57,6 @@ class _HomeState extends State<Home> {
                 children: [
                   Text(
                     DateFormat('EEEE dd', ).format(currentDate),
-                   
                     style: TextStyle(
                       fontSize: 33,
                       fontWeight: FontWeight.w600,
