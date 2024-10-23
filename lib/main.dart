@@ -38,23 +38,18 @@ Future<void> initNotifications() async {
     android: initializationSettingsAndroid,
   );
 
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-  const AndroidNotificationChannel channel = AndroidNotificationChannel(
-    'general_notifications', // ID cho kênh thông báo
-    'General Notifications', // Tên kênh thông báo
-    importance: Importance.high,
-  );
+  // await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  // const AndroidNotificationChannel channel = AndroidNotificationChannel(
+  //   'general_notifications', // ID cho kênh thông báo
+  //   'General Notifications', // Tên kênh thông báo
+  //   importance: Importance.high,
+  // );
 
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(channel);
+  // await flutterLocalNotificationsPlugin
+  //     .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+  //     ?.createNotificationChannel(channel);
 }
 
-Future<void> requestNotificationPermission() async {
-  if (await Permission.notification.isDenied) {
-    await Permission.notification.request();
-  }
-}
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -64,8 +59,32 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  Widget currentPage = SignUp();
+  AuthService authService = AuthService();
+   @override
+  void initState() {
+    
+    super.initState();
+    checkLogin();
+  }
+
+  void checkLogin() async
+  {
+    String token = await authService.getToken();
+    if(token != null)
+    {
+      setState(() {
+        currentPage = Home();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return MaterialApp(
+      theme: ThemeData(useMaterial3: false),
+      debugShowCheckedModeBanner: false,
+      home: currentPage,
+    );
   }
 }

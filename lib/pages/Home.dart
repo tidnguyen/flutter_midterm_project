@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_midterm_project/Custom/ToDoCard.dart';
@@ -56,7 +55,9 @@ class _HomeState extends State<Home> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    DateFormat('EEEE dd', ).format(currentDate),
+                    DateFormat(
+                      'EEEE dd',
+                    ).format(currentDate),
                     style: TextStyle(
                       fontSize: 33,
                       fontWeight: FontWeight.w600,
@@ -89,11 +90,11 @@ class _HomeState extends State<Home> {
                   MaterialPageRoute(builder: (builder) => AddToDo()),
                 ).then((_) {
                   // Refresh data when coming back from AddToDo
-                    setState(() {
-    currentDate = DateTime.now(); // Update current date after returning
-  });
-
-                });// Cập nhật giao diện sau khi nhận DateTime
+                  setState(() {
+                    currentDate =
+                        DateTime.now(); // Update current date after returning
+                  });
+                }); // Cập nhật giao diện sau khi nhận DateTime
               },
               child: Container(
                 height: 52,
@@ -130,13 +131,13 @@ class _HomeState extends State<Home> {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
           }
-          List<DocumentSnapshot<Object?>> documents = snapshot.data!.docs.cast<DocumentSnapshot<Object?>>();
-
+          List<DocumentSnapshot<Object?>> documents =
+              snapshot.data!.docs.cast<DocumentSnapshot<Object?>>();
 
           // Loại bỏ các tài liệu đã bị xóa
           documents.removeWhere((doc) =>
               selected.any((sel) => sel.id == doc.id && sel.checkValue));
-                 for (var doc in documents) {
+          for (var doc in documents) {
             if (!selected.any((sel) => sel.id == doc.id)) {
               selected.add(Select(id: doc.id, checkValue: false));
             }
