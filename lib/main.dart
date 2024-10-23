@@ -7,49 +7,53 @@ import 'package:flutter_midterm_project/Service/Auth_Service.dart';
 import 'package:flutter_midterm_project/pages/AddToDo.dart';
 import 'package:flutter_midterm_project/pages/Home.dart';
 import 'package:flutter_midterm_project/pages/SignUp.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if(kIsWeb)
-  {
+  if (kIsWeb) {
     await Firebase.initializeApp(
-        options: const FirebaseOptions(
-          apiKey: "AIzaSyBV1UZTTiEB_G43cb2OmX3zLmV-QqZuo3I",
-          authDomain: "mid-tern.firebaseapp.com",
-          projectId: "mid-tern",
-          storageBucket: "mid-tern.appspot.com",
-          messagingSenderId: "686598240384",
-          appId: "1:686598240384:web:a24989e3953971ccfd4e65",
-          measurementId: "G-QHCNEQ52JP"
-      )
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyBV1UZTTiEB_G43cb2OmX3zLmV-QqZuo3I",
+        authDomain: "mid-tern.firebaseapp.com",
+        projectId: "mid-tern",
+        storageBucket: "mid-tern.appspot.com",
+        messagingSenderId: "686598240384",
+        appId: "1:686598240384:web:a24989e3953971ccfd4e65",
+        measurementId: "G-QHCNEQ52JP",
+      ),
     );
-  }
-  else
-  {
+  } else {
     await Firebase.initializeApp();
   }
+
   runApp(MyApp());
 }
 
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
 Future<void> initNotifications() async {
   const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher'); // Thay 'app_icon' bằng tên tài nguyên icon của bạn
+      AndroidInitializationSettings('@mipmap/ic_launcher');
 
   const InitializationSettings initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
   );
 
-  // await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-  // const AndroidNotificationChannel channel = AndroidNotificationChannel(
-  //   'general_notifications', // ID cho kênh thông báo
-  //   'General Notifications', // Tên kênh thông báo
-  //   importance: Importance.high,
-  // );
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
-  // await flutterLocalNotificationsPlugin
-  //     .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-  //     ?.createNotificationChannel(channel);
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'general_notifications', 
+    'General Notifications',
+    description: 'Receive all general notifications from the app.',
+    importance: Importance.high,
+  );
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
 }
-
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -61,18 +65,18 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   Widget currentPage = SignUp();
   AuthService authService = AuthService();
-   @override
+
+  @override
   void initState() {
-    
     super.initState();
+    tz.initializeTimeZones();
+    initNotifications();
     checkLogin();
   }
 
-  void checkLogin() async
-  {
+  void checkLogin() async {
     String token = await authService.getToken();
-    if(token != null)
-    {
+    if (token != null) {
       setState(() {
         currentPage = Home();
       });
