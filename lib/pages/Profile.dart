@@ -1,9 +1,7 @@
 import 'dart:io';
-
-import 'package:flutter/foundation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Profile extends StatefulWidget {
@@ -17,6 +15,7 @@ class _ProfileState extends State<Profile> {
   final ImagePicker _picker = ImagePicker();
   XFile? image;
   String? savedImagePath;
+
   @override
   void initState() {
     super.initState();
@@ -40,43 +39,53 @@ class _ProfileState extends State<Profile> {
     return Scaffold(
       backgroundColor: Colors.black87,
       body: SafeArea(
-        child: Container(
-          width: MediaQuery.of(context).size.width,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              CircleAvatar(
-                radius: 60,
-                backgroundImage: getImage(),
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.topLeft,
+              child: IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: Icon(
+                  CupertinoIcons.arrow_left,
+                  color: Colors.white,
+                  size: 28,
+                ),
               ),
-              SizedBox(
-                height: 30,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+            ),
+            Center(
+              child: Column(
                 children: [
-                  button(),
-                  IconButton(
-                      onPressed: () async {
-                        image = await _picker.pickImage(
-                            source: ImageSource.gallery);
-                        if (image != null) {
-                          await _saveImagePath(image!.path);
-                          setState(() {
-                            _saveImagePath(image!.path);
-                          });
-                          ;
-                        }
-                      },
-                      icon: Icon(
-                        Icons.add_a_photo,
-                        color: Colors.teal,
-                        size: 30,
-                      )),
+                  CircleAvatar(
+                    radius: 60,
+                    backgroundImage: getImage(),
+                  ),
+                  SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      button(),
+                      IconButton(
+                        onPressed: () async {
+                          image = await _picker.pickImage(source: ImageSource.gallery);
+                          if (image != null) {
+                            await _saveImagePath(image!.path);
+                            setState(() {});
+                          }
+                        },
+                        icon: Icon(
+                          Icons.add_a_photo,
+                          color: Colors.teal,
+                          size: 30,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -97,7 +106,7 @@ class _ProfileState extends State<Profile> {
         if (image != null) {
           await _saveImagePath(image!.path);
         }
-        Navigator.pop(context, image!.path);
+        Navigator.pop(context, image?.path);
       },
       child: Container(
         height: 40,
@@ -113,7 +122,7 @@ class _ProfileState extends State<Profile> {
         ),
         child: Center(
           child: Text(
-            "Up Load",
+            "Upload",
             style: TextStyle(
               color: Colors.white,
               fontSize: 18,

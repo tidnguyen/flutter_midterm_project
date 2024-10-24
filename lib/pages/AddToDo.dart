@@ -3,10 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
+import 'package:flutter_midterm_project/Service/Notification_helper.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+
 
 class AddToDo extends StatefulWidget {
   const AddToDo({super.key});
@@ -188,20 +190,16 @@ class _AddToDoState extends State<AddToDo> {
 
  Widget button() {
   return InkWell(
-    onTap: () async {
-      await scheduleNotification(selectedDateTime!);
-
+    onTap: () async{
       // Lưu vào Firestore
-      FirebaseFirestore.instance.collection("Todo").add({
+      await FirebaseFirestore.instance.collection("Todo").add({
         "title": _titleController.text,
         "task": type,
         "Category": category,
         "description": _descriptionController.text,
-        "deadline": selectedDateTime!.microsecondsSinceEpoch,
+        "deadline": selectedDateTime?.microsecondsSinceEpoch,
       });
-
-      // Pass the selected DateTime back to the previous screen
-      Navigator.pop(context, selectedDateTime);
+      Navigator.pop(context);
     },
     child: Container(
       height: 56,

@@ -2,16 +2,18 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_midterm_project/Service/Auth_Service.dart';
 import 'package:flutter_midterm_project/pages/AddToDo.dart';
 import 'package:flutter_midterm_project/pages/Home.dart';
 import 'package:flutter_midterm_project/pages/SignUp.dart';
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_midterm_project/Service/Notification_helper.dart'; 
+import "package:timezone/timezone.dart" as tz;
+import "package:timezone/data/latest_all.dart" as tz;// Import NotificationHelper
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  tz.initializeTimeZones();
+  NotificationHelper.init();
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
@@ -31,30 +33,6 @@ void main() async {
   runApp(MyApp());
 }
 
-FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-Future<void> initNotifications() async {
-  const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  const InitializationSettings initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-  );
-
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-
-  const AndroidNotificationChannel channel = AndroidNotificationChannel(
-    'general_notifications', 
-    'General Notifications',
-    description: 'Receive all general notifications from the app.',
-    importance: Importance.high,
-  );
-
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(channel);
-}
-
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -65,12 +43,9 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   Widget currentPage = SignUp();
   AuthService authService = AuthService();
-
   @override
   void initState() {
     super.initState();
-    tz.initializeTimeZones();
-    initNotifications();
     checkLogin();
   }
 
@@ -78,7 +53,7 @@ class _MyAppState extends State<MyApp> {
     String token = await authService.getToken();
     if (token != null) {
       setState(() {
-        currentPage = SignUp();
+        currentPage = Home();
       });
     }
   }

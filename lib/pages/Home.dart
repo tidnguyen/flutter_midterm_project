@@ -1,15 +1,17 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_midterm_project/Custom/ToDoCard.dart';
 import 'package:flutter_midterm_project/Service/Auth_Service.dart';
+import 'package:flutter_midterm_project/Service/Notification_helper.dart';
 import 'package:flutter_midterm_project/pages/AddToDo.dart';
 import 'package:flutter_midterm_project/pages/Profile.dart';
 import 'package:flutter_midterm_project/pages/SignUp.dart';
 import 'package:flutter_midterm_project/pages/view_data.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import "package:timezone/timezone.dart" as tz;
+import "package:timezone/data/latest_all.dart" as tz;
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -24,22 +26,24 @@ class _HomeState extends State<Home> {
       FirebaseFirestore.instance.collection("Todo").snapshots();
   List<Select> selected = [];
   DateTime? selectedDateTime;
-  DateTime currentDate = DateTime.now(); 
+  DateTime currentDate = DateTime.now();
   String? savedImagePath;
 
   @override
   void initState() {
     super.initState();
-     _loadSavedImage();
+    _loadSavedImage();
   }
 
   Future<void> _loadSavedImage() async {
-    SharedPreferences  prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       savedImagePath = prefs.getString('profile_image');
     });
   }
 
+ 
+  
 
   @override
   Widget build(BuildContext context) {
@@ -111,8 +115,7 @@ class _HomeState extends State<Home> {
                 ).then((_) {
                   // Refresh data when coming back from AddToDo
                   setState(() {
-                    currentDate =
-                        DateTime.now(); // Update current date after returning
+                    currentDate = DateTime.now();
                   });
                 }); // Cập nhật giao diện sau khi nhận DateTime
               },
@@ -138,19 +141,19 @@ class _HomeState extends State<Home> {
           BottomNavigationBarItem(
             icon: InkWell(
               onTap: () async {
-      // Navigate to the Profile page and wait for the result (image path)
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => Profile()),
-      );
+                // Navigate to the Profile page and wait for the result (image path)
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Profile()),
+                );
 
-      // If a result (new image path) is returned, update the image
-      if (result != null && result is String) {
-        setState(() {
-          savedImagePath = result;
-        });
-      }
-    },
+                // If a result (new image path) is returned, update the image
+                if (result != null && result is String) {
+                  setState(() {
+                    savedImagePath = result;
+                  });
+                }
+              },
               child: Icon(
                 Icons.settings,
                 size: 32,
@@ -211,20 +214,24 @@ class _HomeState extends State<Home> {
                   iconColor = Colors.red;
               }
 
-              // Thêm mục vào danh sách lựa chọn nếu chưa có
               if (selected.length <= index ||
                   selected[index].id != snapshot.data?.docs[index].id) {
                 selected.add(
                   Select(id: snapshot.data?.docs[index].id, checkValue: false),
                 );
               }
-
               DateTime? deadline = document["deadline"] != null
                   ? DateTime.fromMicrosecondsSinceEpoch(document["deadline"])
                   : null;
               String formattedTime =
                   deadline != null ? DateFormat('HH:mm').format(deadline) : '';
-
+              
+                NotificationHelper.scheduledNotification(
+                  "Deadline Reminder",
+                  'Your task "${document["title"]}" is due!',
+                  deadline!, 
+                );
+              
               return InkWell(
                 onTap: () {
                   Navigator.push(
