@@ -78,7 +78,7 @@ class _MyAppState extends State<MyApp> {
     String token = await authService.getToken();
     if (token != null) {
       setState(() {
-        currentPage = Home();
+        currentPage = SignUp();
       });
     }
   }

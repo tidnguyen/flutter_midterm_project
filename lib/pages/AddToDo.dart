@@ -189,9 +189,6 @@ class _AddToDoState extends State<AddToDo> {
  Widget button() {
   return InkWell(
     onTap: () async {
-      // Thiết lập thời gian cho thông báo
-
-      // Chỉ cần thử nghiệm với scheduledDate
       await scheduleNotification(selectedDateTime!);
 
       // Lưu vào Firestore

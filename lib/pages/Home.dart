@@ -1,11 +1,15 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_midterm_project/Custom/ToDoCard.dart';
 import 'package:flutter_midterm_project/Service/Auth_Service.dart';
 import 'package:flutter_midterm_project/pages/AddToDo.dart';
+import 'package:flutter_midterm_project/pages/Profile.dart';
 import 'package:flutter_midterm_project/pages/SignUp.dart';
 import 'package:flutter_midterm_project/pages/view_data.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -20,8 +24,22 @@ class _HomeState extends State<Home> {
       FirebaseFirestore.instance.collection("Todo").snapshots();
   List<Select> selected = [];
   DateTime? selectedDateTime;
-  DateTime currentDate =
-      DateTime.now(); // Thêm biến để lưu giá trị DateTime trả về từ AddToDo
+  DateTime currentDate = DateTime.now(); 
+  String? savedImagePath;
+
+  @override
+  void initState() {
+    super.initState();
+     _loadSavedImage();
+  }
+
+  Future<void> _loadSavedImage() async {
+    SharedPreferences  prefs = await SharedPreferences.getInstance();
+    setState(() {
+      savedImagePath = prefs.getString('profile_image');
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +57,9 @@ class _HomeState extends State<Home> {
         ),
         actions: [
           CircleAvatar(
-            backgroundImage: AssetImage("assets/OIP.jpeg"),
+            backgroundImage: savedImagePath != null
+                ? FileImage(File(savedImagePath!))
+                : AssetImage("assets/OIP.jpeg") as ImageProvider,
           ),
           SizedBox(
             width: 25,
@@ -116,10 +136,26 @@ class _HomeState extends State<Home> {
             label: "",
           ),
           BottomNavigationBarItem(
-            icon: Icon(
-              Icons.settings,
-              size: 32,
-              color: Colors.white,
+            icon: InkWell(
+              onTap: () async {
+      // Navigate to the Profile page and wait for the result (image path)
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => Profile()),
+      );
+
+      // If a result (new image path) is returned, update the image
+      if (result != null && result is String) {
+        setState(() {
+          savedImagePath = result;
+        });
+      }
+    },
+              child: Icon(
+                Icons.settings,
+                size: 32,
+                color: Colors.white,
+              ),
             ),
             label: "",
           ),
