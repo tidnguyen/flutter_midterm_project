@@ -1,14 +1,17 @@
-
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:flutter_midterm_project/Service/Notification_helper.dart';
+import 'package:flutter_midterm_project/pages/utils.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-
 
 class AddToDo extends StatefulWidget {
   const AddToDo({super.key});
@@ -23,8 +26,17 @@ class _AddToDoState extends State<AddToDo> {
   String type = "";
   String category = "";
   DateTime? selectedDateTime;
+  List<File> _selectedImages = [];
+  List<File> _selectedFiles = [];
+  List<Reference> _uploadedFiles = [];
+  final ImagePicker _picker = ImagePicker();
+  final Utils utils = Utils();
+  String taskID = FirebaseFirestore.instance.collection("Todo").doc().id;
 
-  // Thử với 10 giây
+  void initState() {
+    super.initState();
+    getUploadedFiles();
+  }
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -118,9 +130,45 @@ class _AddToDoState extends State<AddToDo> {
                       height: 12,
                     ),
                     description(),
-                    SizedBox(
-                      height: 25,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton(
+                          child: Text("Choose Image"),
+                          onPressed: () async {
+                            final XFile? selectedImage = await _picker
+                                .pickImage(source: ImageSource.gallery);
+                            if (selectedImage != null) {
+                              File imageFile = File(selectedImage.path);
+                              bool success = await utils.uploadFileForUser(
+                                  imageFile, taskID);
+                              if (success) {
+                                getTaskImages(taskID);
+                              }
+                            }
+                          },
+                        ),
+                        // Button to select files
+                        ElevatedButton(
+                          child: Text("Choose File"),
+                          onPressed: () async {
+                            FilePickerResult? result =
+                                await FilePicker.platform.pickFiles(
+                              allowMultiple: true,
+                              type: FileType.any,
+                            );
+                            if (result != null) {
+                              setState(() {
+                                _selectedFiles = result.paths
+                                    .map((path) => File(path!))
+                                    .toList();
+                              });
+                            }
+                          },
+                        ),
+                      ],
                     ),
+                    SizedBox(height: 12,),
                     label("Category"),
                     SizedBox(
                       height: 12,
@@ -188,74 +236,169 @@ class _AddToDoState extends State<AddToDo> {
     );
   }
 
- Widget button() {
-  return InkWell(
-    onTap: () async{
-      // Lưu vào Firestore
-      await FirebaseFirestore.instance.collection("Todo").add({
-        "title": _titleController.text,
-        "task": type,
-        "Category": category,
-        "description": _descriptionController.text,
-        "deadline": selectedDateTime?.microsecondsSinceEpoch,
-      });
-      Navigator.pop(context);
-    },
-    child: Container(
-      height: 56,
-      width: MediaQuery.of(context).size.width,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(
-          colors: [
-            Color(0xff8a32f1),
-            Color(0xffad32f9),
-          ],
-        ),
-      ),
-      child: Center(
-        child: Text(
-          "Add Todo",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    ),
-  );
-}
+  Widget button() {
+    return InkWell(
+      onTap: () async {
+        List<String> imageUrls = await Future.wait(
+    _uploadedFiles.map((ref) => ref.getDownloadURL()),
+        );
+        // Lưu vào Firestore
+        await FirebaseFirestore.instance.collection("Todo").add({
+          "title": _titleController.text,
+          "task": type,
+          "Category": category,
+          "description": _descriptionController.text,
+          "deadline": selectedDateTime?.microsecondsSinceEpoch,
+          "taskID": taskID,
+          "images": imageUrls
+        });
 
-  Widget description() {
-    return Container(
-      height: 150,
-      width: MediaQuery.of(context).size.width,
-      decoration: BoxDecoration(
-        color: Color(0xff2a2e3d),
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: TextFormField(
-        controller: _descriptionController,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 17,
-        ),
-        maxLines: null,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: "Task Title",
-          hintStyle: TextStyle(
-            color: Colors.grey,
-            fontSize: 17,
+        Navigator.pop(context);
+      },
+      child: Container(
+        height: 56,
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            colors: [
+              Color(0xff8a32f1),
+              Color(0xffad32f9),
+            ],
           ),
-          contentPadding: EdgeInsets.only(
-            left: 20,
-            right: 20,
+        ),
+        child: Center(
+          child: Text(
+            "Add Todo",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),
     );
+  }
+
+  Widget description() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: 150,
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+            color: Color(0xff2a2e3d),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: TextFormField(
+            controller: _descriptionController,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 17,
+            ),
+            maxLines: null,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: "Task title",
+              hintStyle: TextStyle(
+                color: Colors.grey,
+                fontSize: 17,
+              ),
+              contentPadding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+              ),
+            ),
+          ),
+        ),
+
+        // Row containing "Chọn Hình Ảnh" and "Chọn File" buttons
+
+        SizedBox(height: 10),
+
+        // Display selected images
+        if (_uploadedFiles.isNotEmpty)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Hình ảnh:",
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: _uploadedFiles.length,
+                itemBuilder: (context, index) {
+                  Reference ref = _uploadedFiles[index];
+                  return FutureBuilder(
+                    future: ref.getDownloadURL(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return ListTile(
+                          leading: Image.network(snapshot.data!),
+                        );
+                      }
+                      return Container();
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+
+        SizedBox(height: 10),
+
+        // Display selected files
+        if (_selectedFiles.isNotEmpty)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "File Đính Kèm:",
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+              SizedBox(height: 10),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: _selectedFiles.map((file) {
+                  return Container(
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[800],
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      file.path.split('/').last,
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+
+  void getTaskImages(String taskID) async {
+    List<Reference>? result = await utils.getTaskImages(taskID);
+    if (result != null) {
+      setState(() {
+        _uploadedFiles = result;
+      });
+    }
+  }
+
+  void getUploadedFiles() async {
+    List<Reference>? result = await utils.getUsersUploadedFiles();
+    if (result != null) {
+      setState(() {
+        _uploadedFiles = result;
+      });
+    }
   }
 
   Widget taskSelect(String label, int color) {
@@ -358,30 +501,29 @@ class _AddToDoState extends State<AddToDo> {
           letterSpacing: 0.2),
     );
   }
- Future<void> scheduleNotification(DateTime scheduledDate) async {
-  print("Current time: ${DateTime.now()}");
-  print("Scheduled time: ${scheduledDate}");
 
-  await flutterLocalNotificationsPlugin.zonedSchedule(
-    0,
-    'Deadline Reminder',
-    'Your task "${_titleController.text}" is due now!',
-    tz.TZDateTime.from(scheduledDate, tz.local),
-    const NotificationDetails(
-      android: AndroidNotificationDetails(
-        'general_notifications',
-        'General Notifications',
-        channelDescription:
-            'Receive all general notifications from the app.',
-        importance: Importance.high,
-        priority: Priority.high,
-        playSound: true,
+  Future<void> scheduleNotification(DateTime scheduledDate) async {
+    print("Current time: ${DateTime.now()}");
+    print("Scheduled time: ${scheduledDate}");
+
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      0,
+      'Deadline Reminder',
+      'Your task "${_titleController.text}" is due now!',
+      tz.TZDateTime.from(scheduledDate, tz.local),
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'general_notifications',
+          'General Notifications',
+          channelDescription: 'Receive all general notifications from the app.',
+          importance: Importance.high,
+          priority: Priority.high,
+          playSound: true,
+        ),
       ),
-    ),
-    uiLocalNotificationDateInterpretation:
-        UILocalNotificationDateInterpretation.absoluteTime,
-    matchDateTimeComponents: DateTimeComponents.dateAndTime,
-  );
-}
-
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.dateAndTime,
+    );
+  }
 }
