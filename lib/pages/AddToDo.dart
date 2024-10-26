@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -231,14 +232,18 @@ class _AddToDoState extends State<AddToDo> {
     );
   }
 
+  final String? userID = FirebaseAuth.instance.currentUser?.uid;
+
   Widget button() {
     return InkWell(
       onTap: () async {
+        if(userID != null){
         List<String> imageUrls = await Future.wait(_uploadedFiles.map((ref) => ref.getDownloadURL()),);
         List<String> fileUrls = [];
         for (var file in _selectedFiles) {
           String fileName = file.path.split('/').last;
           Reference ref = FirebaseStorage.instance.ref().child("uploads/$taskID/files/$fileName");
+
           await ref.putFile(file);
 
           String fileUrl = await ref.getDownloadURL();
@@ -246,6 +251,7 @@ class _AddToDoState extends State<AddToDo> {
         }
 
         await FirebaseFirestore.instance.collection("Todo").add({
+          "uid": userID,
           "title": _titleController.text,
           "task": type,
           "Category": category,
@@ -257,7 +263,10 @@ class _AddToDoState extends State<AddToDo> {
         });
 
         Navigator.pop(context);
-      },
+      } else{
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User not signed in.")));
+      }
+  },
       child: Container(
         height: 56,
         width: MediaQuery.of(context).size.width,

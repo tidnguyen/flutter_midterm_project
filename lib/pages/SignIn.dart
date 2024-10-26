@@ -49,7 +49,7 @@ class _SignInState extends State<SignIn> {
               SizedBox(
                 height: 15,
               ),
-              ButtonItem("assets/ano.jpeg", "Continue Anonymously", 30, () async {
+              ButtonItem("assets/ano.svg", "Continue Anonymously", 30, () async {
                 authService.anonymousSignIn(context);
                }),
               SizedBox(
@@ -109,6 +109,8 @@ class _SignInState extends State<SignIn> {
               await firebaseAuth.signInWithEmailAndPassword(
                   email: _emailController.text,
                   password: _passwordController.text);
+            
+          String uid = userCredential.user?.uid ?? '';
           print(userCredential.user?.email);
           setState(() {
             circular = false;
