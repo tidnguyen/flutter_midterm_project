@@ -54,6 +54,7 @@ class _ProfileState extends State<Profile> {
                 ),
               ),
             ),
+            
             Center(
               child: Column(
                 children: [

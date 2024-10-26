@@ -49,6 +49,12 @@ class _SignInState extends State<SignIn> {
               SizedBox(
                 height: 15,
               ),
+              ButtonItem("assets/ano.jpeg", "Continue Anonymously", 30, () async {
+                authService.anonymousSignIn(context);
+               }),
+              SizedBox(
+                height: 15,
+              ),
               Text(
                 "Or",
                 style: TextStyle(fontSize: 18),
