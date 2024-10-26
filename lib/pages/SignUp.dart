@@ -56,7 +56,7 @@ class _SignUpState extends State<SignUp> {
               SizedBox(
                 height: 15,
               ),
-              ButtonItem("assets/ano.jpeg", "Continue Anonymously", 30, () async {
+              ButtonItem("assets/ano.svg", "Continue Anonymously", 30, () async {
                 authService.anonymousSignIn(context);
                }),
               SizedBox(
