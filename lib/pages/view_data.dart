@@ -23,9 +23,7 @@ class ViewData extends StatefulWidget {
 
 class _ViewDataState extends State<ViewData> {
   List<String> _fileUrls = []; 
-  List<Reference> _uploadedFiles = [];
   List<String> _imageUrls = [];
-  List<File> _selectedFiles = [];
   TextEditingController? _titleController;
   TextEditingController? _descriptionController;
   String? type;
@@ -34,7 +32,6 @@ class _ViewDataState extends State<ViewData> {
   final ImagePicker _picker = ImagePicker();
   final Utils utils = Utils();
   bool edit = false;
-  String taskID = FirebaseFirestore.instance.collection("Todo").doc().id;
 
   @override
   void initState() {
@@ -52,9 +49,6 @@ class _ViewDataState extends State<ViewData> {
             .toLocal();
     _imageUrls = List<String>.from(widget.document?["images"] ?? []);
     _fileUrls = List<String>.from(widget.document?["files"] ?? []);
-    loadTaskImages();
-    print(_imageUrls);
-    getUploadedFiles();
   }
 
   Widget build(BuildContext context) {
@@ -172,19 +166,57 @@ class _ViewDataState extends State<ViewData> {
                           if (selectedImage != null) {
                             File imageFile = File(selectedImage.path);
                             print("Image File: $imageFile");
-                            bool success = await utils.uploadFileForUser(
-                                imageFile, taskID);
-                            if (success) {
-                              setState(() {
-                                getTaskImages(taskID);
-                              });
+                            try {
+                              String fileName = imageFile.path.split('/').last;
+                              Reference ref = FirebaseStorage.instance
+                                  .ref()
+                                  .child('taskImages/$fileName'); 
+                              await ref.putFile(imageFile);
+
+                              String? downloadURL = await getDownloadURL(fileName);
+                              if (downloadURL != null) {
+                                setState(() {
+                                  _imageUrls.add(downloadURL);
+                                });
+                              }
+                            } catch (e) {
+                              print("Error uploading file: $e");
                             }
                           }
                         },
                         child: Text("Add Image"),
                       ),
                     if (_fileUrls.isNotEmpty) buildFileGrid(),
-            
+                    if (edit)
+                      ElevatedButton(
+                        onPressed: () async {
+                          FilePickerResult? result = await FilePicker.platform.pickFiles(
+                              allowMultiple: true,
+                              type: FileType.any,
+                            );
+                          if (result != null) {
+                              PlatformFile file = result.files.first;
+                              String fileName = file.name;
+                              String filePath = file.path!;
+
+                              File fileToUpload = File(filePath);
+
+                              Reference storageRef = FirebaseStorage.instance
+                                  .ref()
+                                  .child('files/$fileName');
+
+                              UploadTask uploadTask = storageRef.putFile(fileToUpload);
+                              TaskSnapshot taskSnapshot = await uploadTask;
+
+                              String downloadUrl = await taskSnapshot.ref.getDownloadURL();
+
+                              setState(() {
+                                _fileUrls.add(downloadUrl);
+                              });
+                          }
+                        },
+                        child: Text("Add File"),
+                      ),
                     SizedBox(height: 12,),
                     label("Category"),
                     SizedBox(height: 12,),
@@ -254,12 +286,14 @@ class _ViewDataState extends State<ViewData> {
     );
   }
 
-  void getTaskImages(String taskID) async {
-    List<Reference>? result = await utils.getTaskImages(taskID);
-    if (result != null) {
-      setState(() {
-        _uploadedFiles = result;
-      });
+  Future<String?> getDownloadURL(String fileName) async {
+    try {
+      Reference ref = FirebaseStorage.instance.ref().child('taskImages/$fileName');
+      String downloadURL = await ref.getDownloadURL();
+      return downloadURL;
+    } catch (e) {
+      print("Error getting download URL: $e");
+      return null;
     }
   }
 
@@ -273,8 +307,15 @@ class _ViewDataState extends State<ViewData> {
       itemBuilder: (context, index) {
         return Stack(
           children: [
-            Image.network(_imageUrls[index],
-                height: 100, width: 100, fit: BoxFit.cover),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8), 
+              child: Image.network(
+                _imageUrls[index],
+                fit: BoxFit.cover,
+                width: double.infinity, 
+                height: double.infinity,
+              ),
+            ),
             if (edit)
               Positioned(
                 top: 0,
@@ -295,14 +336,11 @@ class _ViewDataState extends State<ViewData> {
   }
 
   String getFileName(String url) {
-    // Giải mã URL
     String decodedUrl = Uri.decodeFull(url);
     
-    // Sử dụng biểu thức chính quy để lấy tên file ở phần cuối URL
     RegExp regex = RegExp(r'\/([^\/?]+)(?:\?.*)?$');
     Match? match = regex.firstMatch(decodedUrl);
     
-    // Trả về tên file hoặc 'unknown' nếu không tìm thấy
     return match != null ? match.group(1) ?? 'unknown' : 'unknown';
   }
 
@@ -319,14 +357,14 @@ class _ViewDataState extends State<ViewData> {
       itemBuilder: (context, index) {
         String fileUrl = _fileUrls[index];
         String fileName = getFileName(fileUrl);  
-        print(fileName);      
+        print(fileName);   
         return GestureDetector(
           onTap: () async {
-            final Uri url = Uri.parse(fileUrl); // Chuyển đổi URL thành Uri
+            final Uri url = Uri.parse(fileUrl);
             if (await canLaunchUrl(url)) {
-              await launchUrl(url); // Sử dụng launchUrl để mở URL
+              await launchUrl(url);
             } else {
-              print('Không thể mở $fileUrl');
+              print('Can not open $fileUrl');
             }
           },
           child: Stack(
@@ -382,23 +420,14 @@ class _ViewDataState extends State<ViewData> {
   Widget button() {
     return InkWell(
       onTap: () async {
-        // Xóa ảnh khỏi Firebase Storage nếu ảnh bị xóa trong quá trình chỉnh sửa
-        for (var ref in _uploadedFiles) {
-          String url = await ref.getDownloadURL();
-          if (!_imageUrls.contains(url)) {
-            await ref.delete(); // Xóa ảnh không còn trong danh sách
-          }
-        }
-
         FirebaseFirestore.instance.collection("Todo").doc(widget.id).update({
           "title": _titleController!.text,
           "task": type,
           "Category": category,
           "description": _descriptionController!.text,
           "deadline": selectedDateTime?.microsecondsSinceEpoch,
-          "taskID": taskID,
-          "images": await Future.wait(
-              _uploadedFiles.map((ref) => ref.getDownloadURL())),
+          "images": _imageUrls,
+          "files": _fileUrls,
         });
         Navigator.pop(context);
       },
@@ -463,60 +492,8 @@ class _ViewDataState extends State<ViewData> {
         ),
         SizedBox(height: 10),
 
-        // Hiển thị các URL hình ảnh
-
-        SizedBox(height: 10),
-
-        if (_selectedFiles.isNotEmpty)
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: _selectedFiles.map((file) {
-              return Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.grey[800],
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Text(
-                  file.path.split('/').last,
-                  style: TextStyle(color: Colors.white),
-                ),
-              );
-            }).toList(),
-          ),
       ],
     );
-  }
-
-  // Giả sử bạn có taskID
-
-  Future<void> loadTaskImages() async {
-    // Lấy danh sách Reference tệp
-    List<Reference> fileReferences = await utils.getTaskImages(widget.id!);
-
-    for (Reference ref in fileReferences) {
-      String fileName = ref.name; // Lấy tên tệp từ Reference
-      String? url = await utils.getDownloadURL(widget.id!, fileName);
-      if (url != null) {
-        if (!_imageUrls.contains(url)) {
-          setState(() {
-            _imageUrls.add(url); // Thêm URL vào danh sách
-          });
-        }
-      }
-    }
-  }
-
-  void getUploadedFiles() async {
-    List<Reference>? result = await utils.getUsersUploadedFiles();
-    if (result != null && result.isNotEmpty) {
-      setState(() {
-        _uploadedFiles.addAll(result);
-      });
-    } else {
-      print("No uploaded files found or result is null.");
-    }
   }
 
   Widget taskSelect(String label, int color) {

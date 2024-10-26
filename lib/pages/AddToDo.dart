@@ -26,7 +26,6 @@ class _AddToDoState extends State<AddToDo> {
   String type = "";
   String category = "";
   DateTime? selectedDateTime;
-  List<File> _selectedImages = [];
   List<File> _selectedFiles = [];
   List<Reference> _uploadedFiles = [];
   final ImagePicker _picker = ImagePicker();
@@ -148,7 +147,6 @@ class _AddToDoState extends State<AddToDo> {
                             }
                           },
                         ),
-                        // Button to select files
                         ElevatedButton(
                           child: Text("Choose Files"),
                           onPressed: () async {
@@ -237,19 +235,16 @@ class _AddToDoState extends State<AddToDo> {
     return InkWell(
       onTap: () async {
         List<String> imageUrls = await Future.wait(_uploadedFiles.map((ref) => ref.getDownloadURL()),);
-        // Upload files
         List<String> fileUrls = [];
         for (var file in _selectedFiles) {
           String fileName = file.path.split('/').last;
           Reference ref = FirebaseStorage.instance.ref().child("uploads/$taskID/files/$fileName");
-            // Upload file lên Firebase Storage
           await ref.putFile(file);
 
-          // Lấy URL và thêm vào danh sách
           String fileUrl = await ref.getDownloadURL();
           fileUrls.add(fileUrl);
         }
-        // Lưu vào Firestore
+
         await FirebaseFirestore.instance.collection("Todo").add({
           "title": _titleController.text,
           "task": type,
@@ -322,25 +317,21 @@ class _AddToDoState extends State<AddToDo> {
           ),
         ),
 
-        // Row containing "Chọn Hình Ảnh" and "Chọn File" buttons
-
         SizedBox(height: 10),
 
-        // Display selected images
-        // Display selected images with delete button in grid format
         if (_uploadedFiles.isNotEmpty)
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Hình ảnh:",
+                "Selected Images:",
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               GridView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3, // Display 3 images per row
+                  crossAxisCount: 3,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
                 ),
@@ -391,7 +382,6 @@ class _AddToDoState extends State<AddToDo> {
           ),
         SizedBox(height: 10),
 
-        // Display selected files
         if (_selectedFiles.isNotEmpty)
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
