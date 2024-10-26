@@ -14,8 +14,32 @@ class AuthService {
   FirebaseAuth _auth = FirebaseAuth.instance;
   final storage = new FlutterSecureStorage();
 
+ Future<void> anonymousSignIn(BuildContext context) async {
+  try {
+    // Perform anonymous sign-in
+    UserCredential userCredential = await _auth.signInAnonymously();
+    
+    // Store token and user data, if required
+    await storeTokenAndData(userCredential);
+    
+    // Navigate to the Home page
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (builder) => Home()),
+      (route) => false,
+    );
+  } catch (e) {
+    // Show error message in a snackbar
+    final snackBar = SnackBar(content: Text(e.toString()));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+}
+
+
 Future<void> googleSignIn(BuildContext context) async {
+
   try{
+    await _googleSignIn.signOut();
     GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
     if(googleSignInAccount != null){
       GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
