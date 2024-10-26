@@ -9,6 +9,7 @@ import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:flutter_midterm_project/pages/utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart' as path;
 
 class ViewData extends StatefulWidget {
   ViewData({Key? key, this.document, this.id}) : super(key: key);
@@ -20,6 +21,7 @@ class ViewData extends StatefulWidget {
 }
 
 class _ViewDataState extends State<ViewData> {
+  List<String> _fileUrls = []; // Biến lưu trữ các URL của tệp
   List<Reference> _uploadedFiles = [];
   List<String> _imageUrls = [];
   List<File> _selectedFiles = [];
@@ -32,7 +34,6 @@ class _ViewDataState extends State<ViewData> {
   final Utils utils = Utils();
   bool edit = false;
   String taskID = FirebaseFirestore.instance.collection("Todo").doc().id;
-  
 
   @override
   void initState() {
@@ -45,7 +46,9 @@ class _ViewDataState extends State<ViewData> {
     category = widget.document?["Category"];
     int deadlineMicroseconds = widget.document!["deadline"];
     int deadlineMilliseconds = (deadlineMicroseconds / 1000).round();
-    selectedDateTime = DateTime.fromMillisecondsSinceEpoch(deadlineMilliseconds, isUtc: true).toLocal();
+    selectedDateTime =
+        DateTime.fromMillisecondsSinceEpoch(deadlineMilliseconds, isUtc: true)
+            .toLocal();
     _imageUrls = List<String>.from(widget.document?["images"] ?? []);
     loadTaskImages();
     print(_imageUrls);
@@ -177,24 +180,64 @@ class _ViewDataState extends State<ViewData> {
                       height: 12,
                     ),
                     description(),
-                     Row(
+                    if (_imageUrls.isNotEmpty) buildImageGrid(),
+                    if (edit)
+                      ElevatedButton(
+                        onPressed: () async {
+                          final XFile? selectedImage = await _picker.pickImage(
+                              source: ImageSource.gallery);
+                          if (selectedImage != null) {
+                            File imageFile = File(selectedImage.path);
+                            bool success = await utils.uploadFileForUser(
+                                imageFile, taskID);
+                            if (success) {
+                              setState(() {
+                                loadTaskImages();
+                              });
+                            }
+                          }
+                        },
+                        child: Text("Add Image"),
+                      ),
+                    if (_selectedFiles.isNotEmpty) buildFileGrid(),
+                    // if (_selectedFiles.isNotEmpty)
+                    //   Wrap(
+                    //     spacing: 10,
+                    //     runSpacing: 10,
+                    //     children: _selectedFiles.map((file) {
+                    //       return Container(
+                    //         padding: EdgeInsets.all(8),
+                    //         decoration: BoxDecoration(
+                    //           color: Colors.grey[800],
+                    //           borderRadius: BorderRadius.circular(5),
+                    //         ),
+                    //         child: Column(
+                    //           children: [
+                    //             // Hiển thị hình ảnh nếu là file hình ảnh
+                    //             if (file.path.endsWith('.jpg') ||
+                    //                 file.path.endsWith('.png') ||
+                    //                 file.path.endsWith('.jpeg'))
+                    //               Image.file(
+                    //                 file,
+                    //                 height: 100,
+                    //                 width: 100,
+                    //                 fit: BoxFit.cover,
+                    //               )
+                    //             else
+                    //               // Nếu không phải là hình ảnh, hiển thị tên tệp
+                    //               Text(
+                    //                 file.path.split('/').last,
+                    //                 style: TextStyle(color: Colors.white),
+                    //               ),
+                    //           ],
+                    //         ),
+                    //       );
+                    //     }).toList(),
+                    //   ),
+
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        ElevatedButton(
-                          child: Text("Choose Image"),
-                          onPressed: () async {
-                            final XFile? selectedImage = await _picker
-                                .pickImage(source: ImageSource.gallery);
-                            if (selectedImage != null) {
-                              File imageFile = File(selectedImage.path);
-                              bool success = await utils.uploadFileForUser(
-                                  imageFile, taskID);
-                              if (success) {
-                                loadTaskImages();
-                              }
-                            }
-                          },
-                        ),
                         // Button to select files
                         ElevatedButton(
                           child: Text("Choose File"),
@@ -250,8 +293,8 @@ class _ViewDataState extends State<ViewData> {
                     InkWell(
                       onTap: () {
                         DatePicker.showDateTimePicker(context,
-                            showTitleActions: true, onChanged: (date) {
-                        }, onConfirm: (date) {
+                            showTitleActions: true,
+                            onChanged: (date) {}, onConfirm: (date) {
                           setState(() {
                             selectedDateTime = date;
                           });
@@ -260,7 +303,8 @@ class _ViewDataState extends State<ViewData> {
                       child: Chip(
                         label: Text(
                           selectedDateTime != null
-                              ? DateFormat('HH:mm').format(selectedDateTime!.toLocal())
+                              ? DateFormat('HH:mm')
+                                  .format(selectedDateTime!.toLocal())
                               : 'Pick Deadline',
                         ),
                         shape: RoundedRectangleBorder(
@@ -287,9 +331,79 @@ class _ViewDataState extends State<ViewData> {
     );
   }
 
+  Widget buildImageGrid() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: _imageUrls.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3, crossAxisSpacing: 10, mainAxisSpacing: 10),
+      itemBuilder: (context, index) {
+        return Stack(
+          children: [
+            Image.network(_imageUrls[index],
+                height: 100, width: 100, fit: BoxFit.cover),
+            if (edit)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
+                  icon: Icon(Icons.delete, color: Colors.red),
+                  onPressed: () {
+                    setState(() {
+                      _imageUrls.removeAt(index);
+                    });
+                  },
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget buildFileGrid() {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: _selectedFiles.map((file) {
+        return Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.grey[800],
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Column(
+            children: [
+              Image.file(
+                file,
+                height: 100,
+                width: 100,
+                fit: BoxFit.cover,
+              ),
+              SizedBox(height: 5),
+              Text(
+                path.basename(file.path),
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   Widget button() {
     return InkWell(
-      onTap: ()  async {
+      onTap: () async {
+        // Xóa ảnh khỏi Firebase Storage nếu ảnh bị xóa trong quá trình chỉnh sửa
+        for (var ref in _uploadedFiles) {
+          String url = await ref.getDownloadURL();
+          if (!_imageUrls.contains(url)) {
+            await ref.delete(); // Xóa ảnh không còn trong danh sách
+          }
+        }
+
         FirebaseFirestore.instance.collection("Todo").doc(widget.id).update({
           "title": _titleController!.text,
           "task": type,
@@ -297,7 +411,8 @@ class _ViewDataState extends State<ViewData> {
           "description": _descriptionController!.text,
           "deadline": selectedDateTime?.microsecondsSinceEpoch,
           "taskID": taskID,
-          "images": await Future.wait(_uploadedFiles.map((ref) => ref.getDownloadURL())),
+          "images": await Future.wait(
+              _uploadedFiles.map((ref) => ref.getDownloadURL())),
         });
         Navigator.pop(context);
       },
@@ -327,8 +442,8 @@ class _ViewDataState extends State<ViewData> {
     );
   }
 
- Widget description() {
-  return Column(
+  Widget description() {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
@@ -361,32 +476,11 @@ class _ViewDataState extends State<ViewData> {
           ),
         ),
         SizedBox(height: 10),
-    
-        // Hiển thị danh sách hình ảnh
-        if (_imageUrls.isNotEmpty)
-          Container(
-            height: 200, // Đặt chiều cao cho vùng hiển thị hình ảnh
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal, // Danh sách ngang
-              itemCount: _imageUrls.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Image.network(
-                    _imageUrls[index], // Hiển thị hình ảnh từ URL
-                    height: 200, // Chiều cao của hình ảnh
-                    width: 200, // Chiều rộng của hình ảnh
-                    fit: BoxFit.cover,
-                  ),
-                );
-              },
-            ),
-          ),
-    
+
         // Hiển thị các URL hình ảnh
-    
+
         SizedBox(height: 10),
-    
+
         if (_selectedFiles.isNotEmpty)
           Wrap(
             spacing: 10,
@@ -406,12 +500,12 @@ class _ViewDataState extends State<ViewData> {
             }).toList(),
           ),
       ],
-  );
-}
+    );
+  }
 
   // Giả sử bạn có taskID
 
-Future<void> loadTaskImages() async {
+  Future<void> loadTaskImages() async {
     // Lấy danh sách Reference tệp
     List<Reference> fileReferences = await utils.getTaskImages(widget.id!);
 
@@ -419,23 +513,25 @@ Future<void> loadTaskImages() async {
       String fileName = ref.name; // Lấy tên tệp từ Reference
       String? url = await utils.getDownloadURL(widget.id!, fileName);
       if (url != null) {
-        setState(() {
-          _imageUrls.add(url); // Thêm URL vào danh sách
-        });
+        if (!_imageUrls.contains(url)) {
+          setState(() {
+            _imageUrls.add(url); // Thêm URL vào danh sách
+          });
+        }
       }
     }
   }
 
-
-   void getUploadedFiles() async {
+  void getUploadedFiles() async {
     List<Reference>? result = await utils.getUsersUploadedFiles();
-    if (result != null) {
+    if (result != null && result.isNotEmpty) {
       setState(() {
-        _uploadedFiles.addAll(result); 
+        _uploadedFiles.addAll(result);
       });
+    } else {
+      print("No uploaded files found or result is null.");
     }
   }
-
 
   Widget taskSelect(String label, int color) {
     return InkWell(

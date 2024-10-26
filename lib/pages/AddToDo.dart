@@ -150,18 +150,15 @@ class _AddToDoState extends State<AddToDo> {
                         ),
                         // Button to select files
                         ElevatedButton(
-                          child: Text("Choose File"),
+                          child: Text("Choose Files"),
                           onPressed: () async {
-                            FilePickerResult? result =
-                                await FilePicker.platform.pickFiles(
+                            FilePickerResult? result = await FilePicker.platform.pickFiles(
                               allowMultiple: true,
                               type: FileType.any,
                             );
                             if (result != null) {
                               setState(() {
-                                _selectedFiles = result.paths
-                                    .map((path) => File(path!))
-                                    .toList();
+                                _selectedFiles.addAll(result.paths.map((path) => File(path!)).toList(),);
                               });
                             }
                           },
@@ -239,9 +236,19 @@ class _AddToDoState extends State<AddToDo> {
   Widget button() {
     return InkWell(
       onTap: () async {
-        List<String> imageUrls = await Future.wait(
-    _uploadedFiles.map((ref) => ref.getDownloadURL()),
-        );
+        List<String> imageUrls = await Future.wait(_uploadedFiles.map((ref) => ref.getDownloadURL()),);
+        // Upload files
+        List<String> fileUrls = [];
+        for (var file in _selectedFiles) {
+          String fileName = file.path.split('/').last;
+          Reference ref = FirebaseStorage.instance.ref().child("uploads/$taskID/files/$fileName");
+            // Upload file lên Firebase Storage
+          await ref.putFile(file);
+
+          // Lấy URL và thêm vào danh sách
+          String fileUrl = await ref.getDownloadURL();
+          fileUrls.add(fileUrl);
+        }
         // Lưu vào Firestore
         await FirebaseFirestore.instance.collection("Todo").add({
           "title": _titleController.text,
@@ -250,7 +257,8 @@ class _AddToDoState extends State<AddToDo> {
           "description": _descriptionController.text,
           "deadline": selectedDateTime?.microsecondsSinceEpoch,
           "taskID": taskID,
-          "images": imageUrls
+          "images": imageUrls,
+          "files": fileUrls 
         });
 
         Navigator.pop(context);
@@ -319,6 +327,7 @@ class _AddToDoState extends State<AddToDo> {
         SizedBox(height: 10),
 
         // Display selected images
+        // Display selected images with delete button in grid format
         if (_uploadedFiles.isNotEmpty)
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -327,8 +336,14 @@ class _AddToDoState extends State<AddToDo> {
                 "Hình ảnh:",
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
-              ListView.builder(
+              GridView.builder(
                 shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3, // Display 3 images per row
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
                 itemCount: _uploadedFiles.length,
                 itemBuilder: (context, index) {
                   Reference ref = _uploadedFiles[index];
@@ -336,8 +351,35 @@ class _AddToDoState extends State<AddToDo> {
                     future: ref.getDownloadURL(),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
-                        return ListTile(
-                          leading: Image.network(snapshot.data!),
+                        return Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                snapshot.data!,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                height: double.infinity,
+                              ),
+                            ),
+                            Positioned(
+                              top: 4,
+                              right: 4,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  await ref.delete();
+                                  setState(() {
+                                    _uploadedFiles.removeAt(index);
+                                  });
+                                },
+                                child: CircleAvatar(
+                                  radius: 12,
+                                  backgroundColor: Colors.redAccent,
+                                  child: Icon(Icons.close, size: 16, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
                         );
                       }
                       return Container();
@@ -347,7 +389,6 @@ class _AddToDoState extends State<AddToDo> {
               ),
             ],
           ),
-
         SizedBox(height: 10),
 
         // Display selected files
@@ -356,24 +397,45 @@ class _AddToDoState extends State<AddToDo> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "File Đính Kèm:",
+                "Selected Files:",
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               SizedBox(height: 10),
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
-                children: _selectedFiles.map((file) {
-                  return Container(
-                    padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[800],
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      file.path.split('/').last,
-                      style: TextStyle(color: Colors.white),
-                    ),
+                children: _selectedFiles.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  File file = entry.value;
+                  return Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(8),
+                        width: 120,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[800],
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Text(
+                          file.path.split('/').last,
+                          style: TextStyle(color: Colors.white, fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Positioned(
+                        right: -10,
+                        top: -10,
+                        child: IconButton(
+                          icon: Icon(Icons.close, color: Colors.red),
+                          onPressed: () {
+                            setState(() {
+                              _selectedFiles.removeAt(index);
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   );
                 }).toList(),
               ),
