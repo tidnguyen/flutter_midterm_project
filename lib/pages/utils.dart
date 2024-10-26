@@ -73,4 +73,18 @@ Future<List<Reference>> getTaskImages(String taskID) async {
       return null; // Nếu có lỗi, trả về null
     }
   }
+
+  Future<String?> getDownloadURLFile(String taskID, String fileName) async {
+    try {
+      Reference ref = FirebaseStorage.instance.ref().child('uploads/$taskID/files/$fileName');
+      String downloadURL = await ref.getDownloadURL(); 
+      return downloadURL; // Trả về URL
+    } catch (e) {
+      print("Error getting download URL: $e");
+      return null; // Nếu có lỗi, trả về null
+    }
+  }
+
 }
+
+  

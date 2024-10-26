@@ -10,6 +10,7 @@ import 'package:flutter_midterm_project/pages/utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
+import 'package:url_launcher/url_launcher.dart';
 
 class ViewData extends StatefulWidget {
   ViewData({Key? key, this.document, this.id}) : super(key: key);
@@ -21,7 +22,7 @@ class ViewData extends StatefulWidget {
 }
 
 class _ViewDataState extends State<ViewData> {
-  List<String> _fileUrls = []; // Biến lưu trữ các URL của tệp
+  List<String> _fileUrls = []; 
   List<Reference> _uploadedFiles = [];
   List<String> _imageUrls = [];
   List<File> _selectedFiles = [];
@@ -50,6 +51,7 @@ class _ViewDataState extends State<ViewData> {
         DateTime.fromMillisecondsSinceEpoch(deadlineMilliseconds, isUtc: true)
             .toLocal();
     _imageUrls = List<String>.from(widget.document?["images"] ?? []);
+    _fileUrls = List<String>.from(widget.document?["files"] ?? []);
     loadTaskImages();
     print(_imageUrls);
     getUploadedFiles();
@@ -96,11 +98,7 @@ class _ViewDataState extends State<ViewData> {
                             edit = !edit;
                           });
                         },
-                        icon: Icon(
-                          Icons.edit,
-                          color: edit ? Colors.green : Colors.white,
-                          size: 28,
-                        ),
+                        icon: Icon(Icons.edit, color: edit ? Colors.green : Colors.white, size: 28,),
                       ),
                       IconButton(
                         onPressed: () {
@@ -136,9 +134,7 @@ class _ViewDataState extends State<ViewData> {
                           fontWeight: FontWeight.bold,
                           letterSpacing: 4),
                     ),
-                    SizedBox(
-                      height: 8,
-                    ),
+                    SizedBox(height: 8,),
                     Text(
                       "Your Todo",
                       style: TextStyle(
@@ -148,21 +144,13 @@ class _ViewDataState extends State<ViewData> {
                         letterSpacing: 2,
                       ),
                     ),
-                    SizedBox(
-                      height: 25,
-                    ),
+                    SizedBox(height: 25,),
                     label("Task Title"),
-                    SizedBox(
-                      height: 12,
-                    ),
+                    SizedBox(height: 12,),
                     title(),
-                    SizedBox(
-                      height: 30,
-                    ),
+                    SizedBox(height: 30,),
                     label("Task Type"),
-                    SizedBox(
-                      height: 12,
-                    ),
+                    SizedBox(height: 12,),
                     Row(
                       children: [
                         taskSelect("Important", 0xff2664fa),
@@ -172,99 +160,34 @@ class _ViewDataState extends State<ViewData> {
                         taskSelect("Planned", 0xff2bc8d9),
                       ],
                     ),
-                    SizedBox(
-                      height: 25,
-                    ),
+                    SizedBox(height: 25,),
                     label("Descripiton"),
-                    SizedBox(
-                      height: 12,
-                    ),
+                    SizedBox(height: 12,),
                     description(),
                     if (_imageUrls.isNotEmpty) buildImageGrid(),
                     if (edit)
                       ElevatedButton(
                         onPressed: () async {
-                          final XFile? selectedImage = await _picker.pickImage(
-                              source: ImageSource.gallery);
+                          final XFile? selectedImage = await _picker.pickImage(source: ImageSource.gallery);
                           if (selectedImage != null) {
                             File imageFile = File(selectedImage.path);
+                            print("Image File: $imageFile");
                             bool success = await utils.uploadFileForUser(
                                 imageFile, taskID);
                             if (success) {
                               setState(() {
-                                loadTaskImages();
+                                getTaskImages(taskID);
                               });
                             }
                           }
                         },
                         child: Text("Add Image"),
                       ),
-                    if (_selectedFiles.isNotEmpty) buildFileGrid(),
-                    // if (_selectedFiles.isNotEmpty)
-                    //   Wrap(
-                    //     spacing: 10,
-                    //     runSpacing: 10,
-                    //     children: _selectedFiles.map((file) {
-                    //       return Container(
-                    //         padding: EdgeInsets.all(8),
-                    //         decoration: BoxDecoration(
-                    //           color: Colors.grey[800],
-                    //           borderRadius: BorderRadius.circular(5),
-                    //         ),
-                    //         child: Column(
-                    //           children: [
-                    //             // Hiển thị hình ảnh nếu là file hình ảnh
-                    //             if (file.path.endsWith('.jpg') ||
-                    //                 file.path.endsWith('.png') ||
-                    //                 file.path.endsWith('.jpeg'))
-                    //               Image.file(
-                    //                 file,
-                    //                 height: 100,
-                    //                 width: 100,
-                    //                 fit: BoxFit.cover,
-                    //               )
-                    //             else
-                    //               // Nếu không phải là hình ảnh, hiển thị tên tệp
-                    //               Text(
-                    //                 file.path.split('/').last,
-                    //                 style: TextStyle(color: Colors.white),
-                    //               ),
-                    //           ],
-                    //         ),
-                    //       );
-                    //     }).toList(),
-                    //   ),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Button to select files
-                        ElevatedButton(
-                          child: Text("Choose File"),
-                          onPressed: () async {
-                            FilePickerResult? result =
-                                await FilePicker.platform.pickFiles(
-                              allowMultiple: true,
-                              type: FileType.any,
-                            );
-                            if (result != null) {
-                              setState(() {
-                                _selectedFiles = result.paths
-                                    .map((path) => File(path!))
-                                    .toList();
-                              });
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 12,
-                    ),
+                    if (_fileUrls.isNotEmpty) buildFileGrid(),
+            
+                    SizedBox(height: 12,),
                     label("Category"),
-                    SizedBox(
-                      height: 12,
-                    ),
+                    SizedBox(height: 12,),
                     Wrap(
                       runSpacing: 10,
                       children: [
@@ -331,6 +254,15 @@ class _ViewDataState extends State<ViewData> {
     );
   }
 
+  void getTaskImages(String taskID) async {
+    List<Reference>? result = await utils.getTaskImages(taskID);
+    if (result != null) {
+      setState(() {
+        _uploadedFiles = result;
+      });
+    }
+  }
+
   Widget buildImageGrid() {
     return GridView.builder(
       shrinkWrap: true,
@@ -362,34 +294,88 @@ class _ViewDataState extends State<ViewData> {
     );
   }
 
+  String getFileName(String url) {
+    // Giải mã URL
+    String decodedUrl = Uri.decodeFull(url);
+    
+    // Sử dụng biểu thức chính quy để lấy tên file ở phần cuối URL
+    RegExp regex = RegExp(r'\/([^\/?]+)(?:\?.*)?$');
+    Match? match = regex.firstMatch(decodedUrl);
+    
+    // Trả về tên file hoặc 'unknown' nếu không tìm thấy
+    return match != null ? match.group(1) ?? 'unknown' : 'unknown';
+  }
+
   Widget buildFileGrid() {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: _selectedFiles.map((file) {
-        return Container(
-          padding: EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.grey[800],
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: Column(
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: _fileUrls.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      itemBuilder: (context, index) {
+        String fileUrl = _fileUrls[index];
+        String fileName = getFileName(fileUrl);  
+        print(fileName);      
+        return GestureDetector(
+          onTap: () async {
+            final Uri url = Uri.parse(fileUrl); // Chuyển đổi URL thành Uri
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url); // Sử dụng launchUrl để mở URL
+            } else {
+              print('Không thể mở $fileUrl');
+            }
+          },
+          child: Stack(
             children: [
-              Image.file(
-                file,
-                height: 100,
-                width: 100,
-                fit: BoxFit.cover,
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[800],
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                width: 120,
+                padding: EdgeInsets.all(8),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.insert_drive_file,
+                      color: Colors.white,
+                      size: 50,
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      fileName,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
-              SizedBox(height: 5),
-              Text(
-                path.basename(file.path),
-                style: TextStyle(color: Colors.white),
-              ),
+              if (edit)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      setState(() {
+                        _fileUrls.removeAt(index);
+                      });
+                    },
+                  ),
+                ),
             ],
           ),
         );
-      }).toList(),
+      },
     );
   }
 

@@ -258,7 +258,7 @@ class _AddToDoState extends State<AddToDo> {
           "deadline": selectedDateTime?.microsecondsSinceEpoch,
           "taskID": taskID,
           "images": imageUrls,
-          "files": fileUrls 
+          "files": fileUrls,
         });
 
         Navigator.pop(context);
