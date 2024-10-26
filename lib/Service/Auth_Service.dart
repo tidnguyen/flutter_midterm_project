@@ -18,7 +18,7 @@ class AuthService {
     try {
       // Perform anonymous sign-in
       UserCredential userCredential = await _auth.signInAnonymously();
-
+      String uid = userCredential.user?.uid ?? '';
       // Store token and user data, if required
       await storeTokenAndData(userCredential);
 
@@ -50,6 +50,8 @@ class AuthService {
         try {
           UserCredential userCredential =
               await _auth.signInWithCredential(credential);
+          String uid = userCredential.user?.uid ?? '';
+          
           storeTokenAndData(userCredential);
           Navigator.pushAndRemoveUntil(
               context,
@@ -124,6 +126,8 @@ class AuthService {
 
       UserCredential userCredential =
           await _auth.signInWithCredential(credential);
+      String uid = userCredential.user?.uid ?? '';
+      
       storeTokenAndData(userCredential);
       Navigator.pushAndRemoveUntil(context,
           MaterialPageRoute(builder: (builder) => Home()), (route) => false);

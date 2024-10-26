@@ -109,6 +109,8 @@ class _SignInState extends State<SignIn> {
               await firebaseAuth.signInWithEmailAndPassword(
                   email: _emailController.text,
                   password: _passwordController.text);
+            
+          String uid = userCredential.user?.uid ?? '';
           print(userCredential.user?.email);
           setState(() {
             circular = false;

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_midterm_project/Custom/ToDoCard.dart';
 import 'package:flutter_midterm_project/Service/Auth_Service.dart';
@@ -14,7 +15,7 @@ import "package:timezone/timezone.dart" as tz;
 import "package:timezone/data/latest_all.dart" as tz;
 
 class Home extends StatefulWidget {
-  const Home({super.key});
+  const Home({Key? key}) : super(key: key);
 
   @override
   State<Home> createState() => _HomeState();
@@ -22,8 +23,8 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   AuthService authService = AuthService();
-  final Stream<QuerySnapshot> _stream =
-      FirebaseFirestore.instance.collection("Todo").snapshots();
+  Stream<QuerySnapshot> ?_stream;
+  //     FirebaseFirestore.instance.collection("Todo").where("uid", isEqualTo: userID).snapshots();
   List<Select> selected = [];
   DateTime? selectedDateTime;
   DateTime currentDate = DateTime.now();
@@ -33,6 +34,18 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     _loadSavedImage();
+    String? userID = FirebaseAuth.instance.currentUser?.uid;
+
+        if (userID != null) {
+      // Initialize the stream with the current user's UID
+      _stream = FirebaseFirestore.instance
+          .collection("Todo")
+          .where("uid", isEqualTo: userID)
+          .snapshots();
+    } else {
+      // Handle case where user is not logged in
+      _stream = Stream.empty();  // Empty stream if userID is null
+  }
   }
 
   Future<void> _loadSavedImage() async {

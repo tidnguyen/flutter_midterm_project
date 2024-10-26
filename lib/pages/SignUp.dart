@@ -126,6 +126,8 @@ class _SignUpState extends State<SignUp> {
         setState(() {
           circular = false;
         });
+        String uid = userCredential.user?.uid ?? '';
+
         Navigator.pushAndRemoveUntil(
           context, 
           MaterialPageRoute(builder: (builder) => Home()),
