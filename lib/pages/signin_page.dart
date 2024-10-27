@@ -137,11 +137,6 @@ class _SignInPageState extends State<SignInPage> {
           setState(() {
             circular = false;
           });
-          setState(
-            () {
-              circular = false;
-            },
-          );
           Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (builder) => const HomePage()),

@@ -170,7 +170,7 @@ class _HomePageState extends State<HomePage> {
         stream: _stream,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return Container();
           }
           List<DocumentSnapshot<Object?>> documents =
               snapshot.data!.docs.cast<DocumentSnapshot<Object?>>();
