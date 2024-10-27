@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_midterm_project/Custom/toDoCard.dart';
+import 'package:flutter_midterm_project/Custom/todocard.dart';
 import 'package:flutter_midterm_project/Service/auth_service.dart';
 import 'package:flutter_midterm_project/Service/notification_serivce.dart';
 import 'package:flutter_midterm_project/pages/addtodo_page.dart';

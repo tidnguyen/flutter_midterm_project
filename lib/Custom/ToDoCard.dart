@@ -1,9 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class Todocard extends StatelessWidget {
   const Todocard(
-      {Key? key,
+      {super.key,
       required this.title,
       required this.iconData,
       required this.iconColor,
@@ -11,8 +10,7 @@ class Todocard extends StatelessWidget {
       required this.check,
       required this.iconBgColor,
       this.onChange,
-      this.index})
-      : super(key: key);
+      this.index});
 
   final String title;
   final IconData iconData;
@@ -24,21 +22,21 @@ class Todocard extends StatelessWidget {
   final int? index;
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: MediaQuery.of(context).size.width,
       child: Row(
         children: [
          
           Expanded(
-            child: Container(
+            child: SizedBox(
               height: 75,
               child: Card(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
-                color: Color(0xff2a2e3d),
+                color: const Color(0xff2a2e3d),
                 child: Row(
                   children: [
-                    SizedBox(
+                    const SizedBox(
                       width: 15,
                     ),
                     Container(
@@ -50,13 +48,13 @@ class Todocard extends StatelessWidget {
                       ),
                       child: Icon(iconData, color: iconColor),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 20,
                     ),
                     Expanded(
                       child: Text(
                         title,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 18,
                           letterSpacing: 1,
                           fontWeight: FontWeight.w600,
@@ -66,12 +64,12 @@ class Todocard extends StatelessWidget {
                     ),
                     Text(
                       time ?? "",
-                       style: TextStyle(
+                       style: const TextStyle(
                         fontSize: 17,
                         color: Colors.white,
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 20,
                     ),
                   ],
