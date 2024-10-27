@@ -273,9 +273,8 @@ class _AddToDoPageState extends State<AddToDoPage> {
             "images": imageUrls,
             "files": fileUrls,
           });
-          if (mounted) {
+      
             Navigator.pop(context);
-          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("User not signed in.")));

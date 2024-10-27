@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_midterm_project/Service/auth_service.dart';
 import 'package:flutter_midterm_project/pages/home_page.dart';
+import 'package:flutter_midterm_project/pages/signup_page.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
@@ -84,17 +85,29 @@ class _SignInPageState extends State<SignInPage> {
               const SizedBox(
                 height: 20,
               ),
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     "If you don't have an Account? ",
                     style: TextStyle(fontSize: 18),
                   ),
-                  Text(
-                    "SignUp",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                 InkWell(
+                    onTap: () {
+                      Navigator.pushAndRemoveUntil(
+                        context, 
+                        MaterialPageRoute(builder: (builder) => const SignUpPage()),
+                          (route) => false);
+                    },
+                    child: Text(
+                      "SignUp",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                 )
                 ],
               ),
               const SizedBox(
