@@ -49,7 +49,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                icon: Icon(
+                icon: const Icon(
                   CupertinoIcons.arrow_left,
                   color: Colors.white,
                   size: 28,
@@ -63,7 +63,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     radius: 60,
                     backgroundImage: getImage(),
                   ),
-                  SizedBox(height: 30),
+                  const SizedBox(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -77,7 +77,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             setState(() {});
                           }
                         },
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.add_a_photo,
                           color: Colors.teal,
                           size: 30,
@@ -85,7 +85,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ],
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 80,
                   ),
                   Row(
@@ -97,7 +97,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         width: 140,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
-                          gradient: LinearGradient(
+                          gradient: const LinearGradient(
                             colors: [
                               Color(0xff8a32f1),
                               Color(0xffad32f9),
@@ -108,7 +108,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           onTap: () {
                             signOut(context);
                           },
-                          child: Row(
+                          child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
@@ -147,8 +147,9 @@ class _ProfilePageState extends State<ProfilePage> {
       await FirebaseAuth.instance.signOut();
       // Điều hướng về màn hình đăng nhập sau khi đăng xuất thành công
       Navigator.pushAndRemoveUntil(context,
-          MaterialPageRoute(builder: (builder) => SignInPage()), (route) => false);
+          MaterialPageRoute(builder: (builder) => const SignInPage()), (route) => false);
     } catch (e) {
+      return;
     }
   }
 
@@ -158,7 +159,7 @@ class _ProfilePageState extends State<ProfilePage> {
     } else if (savedImagePath != null) {
       return FileImage(File(savedImagePath!));
     }
-    return AssetImage("assets/OIP.jpeg");
+    return const AssetImage("assets/OIP.jpeg");
   }
 
   Widget button() {
@@ -174,14 +175,14 @@ class _ProfilePageState extends State<ProfilePage> {
         width: MediaQuery.of(context).size.width / 2,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             colors: [
               Color(0xff8a32f1),
               Color(0xffad32f9),
             ],
           ),
         ),
-        child: Center(
+        child: const Center(
           child: Text(
             "Upload",
             style: TextStyle(

@@ -48,7 +48,7 @@ class AuthService {
           storeTokenAndData(userCredential);
           Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (builder) => HomePage()),
+              MaterialPageRoute(builder: (builder) => const HomePage()),
               (route) => false);
         } catch (e) {
           const snackBar = SnackBar(content: Text("Not Able to Sign In"));

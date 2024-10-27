@@ -421,7 +421,7 @@ class _AddToDoPageState extends State<AddToDoPage> {
                     alignment: Alignment.topRight,
                     children: [
                       Container(
-                        padding: EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(8),
                         width: 120,
                         decoration: BoxDecoration(
                           color: Colors.grey[800],
@@ -429,7 +429,7 @@ class _AddToDoPageState extends State<AddToDoPage> {
                         ),
                         child: Text(
                           file.path.split('/').last,
-                          style: TextStyle(color: Colors.white, fontSize: 12),
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -437,7 +437,7 @@ class _AddToDoPageState extends State<AddToDoPage> {
                         right: -10,
                         top: -10,
                         child: IconButton(
-                          icon: Icon(Icons.close, color: Colors.red),
+                          icon: const Icon(Icons.close, color: Colors.red),
                           onPressed: () {
                             setState(
                               () {

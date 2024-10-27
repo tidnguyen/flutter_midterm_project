@@ -20,7 +20,7 @@ class NotificationService {
     return; 
   }
 
-  var androidDetails = AndroidNotificationDetails(
+  var androidDetails = const AndroidNotificationDetails(
     'important_notification',
     'My Channel',
     importance: Importance.max,
