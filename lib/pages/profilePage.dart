@@ -1,17 +1,19 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_midterm_project/pages/signInPage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Profile extends StatefulWidget {
-  const Profile({super.key});
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
 
   @override
-  State<Profile> createState() => _ProfileState();
+  State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfileState extends State<Profile> {
+class _ProfilePageState extends State<ProfilePage> {
   final ImagePicker _picker = ImagePicker();
   XFile? image;
   String? savedImagePath;
@@ -54,7 +56,6 @@ class _ProfileState extends State<Profile> {
                 ),
               ),
             ),
-            
             Center(
               child: Column(
                 children: [
@@ -69,7 +70,8 @@ class _ProfileState extends State<Profile> {
                       button(),
                       IconButton(
                         onPressed: () async {
-                          image = await _picker.pickImage(source: ImageSource.gallery);
+                          image = await _picker.pickImage(
+                              source: ImageSource.gallery);
                           if (image != null) {
                             await _saveImagePath(image!.path);
                             setState(() {});
@@ -83,6 +85,54 @@ class _ProfileState extends State<Profile> {
                       ),
                     ],
                   ),
+                  SizedBox(
+                    height: 80,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        alignment: Alignment.center,
+                        height: 40,
+                        width: 140,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          gradient: LinearGradient(
+                            colors: [
+                              Color(0xff8a32f1),
+                              Color(0xffad32f9),
+                            ],
+                          ),
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            signOut(context);
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.logout,
+                                color: Colors.white,
+                                size: 25,
+                              ),
+                              SizedBox(
+                                width: 8,
+                              ),
+                              Text(
+                                "Logout",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -90,6 +140,16 @@ class _ProfileState extends State<Profile> {
         ),
       ),
     );
+  }
+
+  Future<void> signOut(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      // Điều hướng về màn hình đăng nhập sau khi đăng xuất thành công
+      Navigator.pushAndRemoveUntil(context,
+          MaterialPageRoute(builder: (builder) => SignInPage()), (route) => false);
+    } catch (e) {
+    }
   }
 
   ImageProvider getImage() {

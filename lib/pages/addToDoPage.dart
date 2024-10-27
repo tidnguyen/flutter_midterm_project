@@ -6,33 +6,31 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
-import 'package:flutter_midterm_project/Service/Notification_helper.dart';
-import 'package:flutter_midterm_project/pages/utils.dart';
+import 'package:flutter_midterm_project/Service/utilsService.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 
-class AddToDo extends StatefulWidget {
-  const AddToDo({super.key});
+class AddToDoPage extends StatefulWidget {
+  const AddToDoPage({super.key});
 
   @override
-  State<AddToDo> createState() => _AddToDoState();
+  State<AddToDoPage> createState() => _AddToDoPageState();
 }
 
-class _AddToDoState extends State<AddToDo> {
-  TextEditingController _titleController = TextEditingController();
-  TextEditingController _descriptionController = TextEditingController();
+class _AddToDoPageState extends State<AddToDoPage> {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
   String type = "";
   String category = "";
   DateTime? selectedDateTime;
-  List<File> _selectedFiles = [];
+  final List<File> _selectedFiles = [];
   List<Reference> _uploadedFiles = [];
   final ImagePicker _picker = ImagePicker();
-  final Utils utils = Utils();
+  final UtilsService utils = UtilsService();
   String taskID = FirebaseFirestore.instance.collection("Todo").doc().id;
 
+  @override
   void initState() {
     super.initState();
     getUploadedFiles();
@@ -47,7 +45,7 @@ class _AddToDoState extends State<AddToDo> {
       body: Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
               Color(0xff1d1e26),
@@ -59,14 +57,14 @@ class _AddToDoState extends State<AddToDo> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
+              const SizedBox(
                 height: 30,
               ),
               IconButton(
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                icon: Icon(
+                icon: const Icon(
                   CupertinoIcons.arrow_left,
                   color: Colors.white,
                   size: 28,
@@ -78,7 +76,7 @@ class _AddToDoState extends State<AddToDo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       "Create",
                       style: TextStyle(
                           fontSize: 33,
@@ -86,10 +84,10 @@ class _AddToDoState extends State<AddToDo> {
                           fontWeight: FontWeight.bold,
                           letterSpacing: 4),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 8,
                     ),
-                    Text(
+                    const Text(
                       "New Todo",
                       style: TextStyle(
                         fontSize: 33,
@@ -98,35 +96,35 @@ class _AddToDoState extends State<AddToDo> {
                         letterSpacing: 2,
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 25,
                     ),
                     label("Task Title"),
-                    SizedBox(
+                    const SizedBox(
                       height: 12,
                     ),
                     title(),
-                    SizedBox(
+                    const SizedBox(
                       height: 30,
                     ),
                     label("Task Type"),
-                    SizedBox(
+                    const SizedBox(
                       height: 12,
                     ),
                     Row(
                       children: [
                         taskSelect("Important", 0xff2664fa),
-                        SizedBox(
+                        const SizedBox(
                           width: 20,
                         ),
                         taskSelect("Planned", 0xff2bc8d9),
                       ],
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 25,
                     ),
                     label("Descripiton"),
-                    SizedBox(
+                    const SizedBox(
                       height: 12,
                     ),
                     description(),
@@ -134,7 +132,7 @@ class _AddToDoState extends State<AddToDo> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         ElevatedButton(
-                          child: Text("Choose Image"),
+                          child: const Text("Choose Image"),
                           onPressed: () async {
                             final XFile? selectedImage = await _picker
                                 .pickImage(source: ImageSource.gallery);
@@ -149,60 +147,70 @@ class _AddToDoState extends State<AddToDo> {
                           },
                         ),
                         ElevatedButton(
-                          child: Text("Choose Files"),
+                          child: const Text("Choose Files"),
                           onPressed: () async {
-                            FilePickerResult? result = await FilePicker.platform.pickFiles(
+                            FilePickerResult? result =
+                                await FilePicker.platform.pickFiles(
                               allowMultiple: true,
                               type: FileType.any,
                             );
                             if (result != null) {
-                              setState(() {
-                                _selectedFiles.addAll(result.paths.map((path) => File(path!)).toList(),);
-                              });
+                              setState(
+                                () {
+                                  _selectedFiles.addAll(
+                                    result.paths
+                                        .map((path) => File(path!))
+                                        .toList(),
+                                  );
+                                },
+                              );
                             }
                           },
                         ),
                       ],
                     ),
-                    SizedBox(height: 12,),
+                    const SizedBox(
+                      height: 12,
+                    ),
                     label("Category"),
-                    SizedBox(
+                    const SizedBox(
                       height: 12,
                     ),
                     Wrap(
                       runSpacing: 10,
                       children: [
                         categorySelect("Food", 0xffff6d6e),
-                        SizedBox(
+                        const SizedBox(
                           width: 20,
                         ),
                         categorySelect("WorkOut", 0xfff29732),
-                        SizedBox(
+                        const SizedBox(
                           width: 20,
                         ),
                         categorySelect("Work", 0xff6557ff),
-                        SizedBox(
+                        const SizedBox(
                           width: 20,
                         ),
                         categorySelect("Design", 0xff234ebd),
-                        SizedBox(
+                        const SizedBox(
                           width: 20,
                         ),
                         categorySelect("Run", 0xff2bc8d9),
                       ],
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 30,
                     ),
                     InkWell(
                       onTap: () {
                         DatePicker.showDateTimePicker(context,
-                            showTitleActions: true, onChanged: (date) {
-                          print('change $date');
-                        }, onConfirm: (date) {
-                          setState(() {
-                            selectedDateTime = date;
-                          });
+                            showTitleActions: true,
+                            onChanged: (date) {}, onConfirm: (date) {
+                          setState(
+                            () {
+                              selectedDateTime = date;
+                            },
+                          );
                         }, currentTime: DateTime.now(), locale: LocaleType.vi);
                       },
                       child: Chip(
@@ -218,7 +226,7 @@ class _AddToDoState extends State<AddToDo> {
                         ),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 30,
                     ),
                     button(),
@@ -237,49 +245,54 @@ class _AddToDoState extends State<AddToDo> {
   Widget button() {
     return InkWell(
       onTap: () async {
-        if(userID != null){
-        List<String> imageUrls = await Future.wait(_uploadedFiles.map((ref) => ref.getDownloadURL()),);
-        List<String> fileUrls = [];
-        for (var file in _selectedFiles) {
-          String fileName = file.path.split('/').last;
-          Reference ref = FirebaseStorage.instance.ref().child("uploads/$taskID/files/$fileName");
+        if (userID != null) {
+          List<String> imageUrls = await Future.wait(
+            _uploadedFiles.map((ref) => ref.getDownloadURL()),
+          );
+          List<String> fileUrls = [];
+          for (var file in _selectedFiles) {
+            String fileName = file.path.split('/').last;
+            Reference ref = FirebaseStorage.instance
+                .ref()
+                .child("uploads/$taskID/files/$fileName");
 
-          await ref.putFile(file);
+            await ref.putFile(file);
 
-          String fileUrl = await ref.getDownloadURL();
-          fileUrls.add(fileUrl);
+            String fileUrl = await ref.getDownloadURL();
+            fileUrls.add(fileUrl);
+          }
+
+          await FirebaseFirestore.instance.collection("Todo").add({
+            "uid": userID,
+            "title": _titleController.text,
+            "task": type,
+            "Category": category,
+            "description": _descriptionController.text,
+            "deadline": selectedDateTime?.microsecondsSinceEpoch,
+            "taskID": taskID,
+            "images": imageUrls,
+            "files": fileUrls,
+          });
+
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("User not signed in.")));
         }
-
-        await FirebaseFirestore.instance.collection("Todo").add({
-          "uid": userID,
-          "title": _titleController.text,
-          "task": type,
-          "Category": category,
-          "description": _descriptionController.text,
-          "deadline": selectedDateTime?.microsecondsSinceEpoch,
-          "taskID": taskID,
-          "images": imageUrls,
-          "files": fileUrls,
-        });
-
-        Navigator.pop(context);
-      } else{
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User not signed in.")));
-      }
-  },
+      },
       child: Container(
         height: 56,
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             colors: [
               Color(0xff8a32f1),
               Color(0xffad32f9),
             ],
           ),
         ),
-        child: Center(
+        child: const Center(
           child: Text(
             "Add Todo",
             style: TextStyle(
@@ -301,17 +314,17 @@ class _AddToDoState extends State<AddToDo> {
           height: 150,
           width: MediaQuery.of(context).size.width,
           decoration: BoxDecoration(
-            color: Color(0xff2a2e3d),
+            color: const Color(0xff2a2e3d),
             borderRadius: BorderRadius.circular(15),
           ),
           child: TextFormField(
             controller: _descriptionController,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 17,
             ),
             maxLines: null,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               border: InputBorder.none,
               hintText: "Task title",
               hintStyle: TextStyle(
@@ -325,21 +338,19 @@ class _AddToDoState extends State<AddToDo> {
             ),
           ),
         ),
-
-        SizedBox(height: 10),
-
+        const SizedBox(height: 10),
         if (_uploadedFiles.isNotEmpty)
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 "Selected Images:",
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               GridView.builder(
                 shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
@@ -372,10 +383,11 @@ class _AddToDoState extends State<AddToDo> {
                                     _uploadedFiles.removeAt(index);
                                   });
                                 },
-                                child: CircleAvatar(
+                                child: const CircleAvatar(
                                   radius: 12,
                                   backgroundColor: Colors.redAccent,
-                                  child: Icon(Icons.close, size: 16, color: Colors.white),
+                                  child: Icon(Icons.close,
+                                      size: 16, color: Colors.white),
                                 ),
                               ),
                             ),
@@ -389,17 +401,16 @@ class _AddToDoState extends State<AddToDo> {
               ),
             ],
           ),
-        SizedBox(height: 10),
-
+        const SizedBox(height: 10),
         if (_selectedFiles.isNotEmpty)
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 "Selected Files:",
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
@@ -428,9 +439,11 @@ class _AddToDoState extends State<AddToDo> {
                         child: IconButton(
                           icon: Icon(Icons.close, color: Colors.red),
                           onPressed: () {
-                            setState(() {
-                              _selectedFiles.removeAt(index);
-                            });
+                            setState(
+                              () {
+                                _selectedFiles.removeAt(index);
+                              },
+                            );
                           },
                         ),
                       ),
@@ -446,28 +459,32 @@ class _AddToDoState extends State<AddToDo> {
 
   void getTaskImages(String taskID) async {
     List<Reference>? result = await utils.getTaskImages(taskID);
-    if (result != null) {
-      setState(() {
+    setState(
+      () {
         _uploadedFiles = result;
-      });
-    }
+      },
+    );
   }
 
   void getUploadedFiles() async {
     List<Reference>? result = await utils.getUsersUploadedFiles();
     if (result != null) {
-      setState(() {
-        _uploadedFiles = result;
-      });
+      setState(
+        () {
+          _uploadedFiles = result;
+        },
+      );
     }
   }
 
   Widget taskSelect(String label, int color) {
     return InkWell(
       onTap: () {
-        setState(() {
-          type = label;
-        });
+        setState(
+          () {
+            type = label;
+          },
+        );
       },
       child: Chip(
         backgroundColor: type == label ? Colors.white : Color(color),
@@ -484,7 +501,7 @@ class _AddToDoState extends State<AddToDo> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        labelPadding: EdgeInsets.symmetric(
+        labelPadding: const EdgeInsets.symmetric(
           horizontal: 17,
           vertical: 3.8,
         ),
@@ -495,9 +512,11 @@ class _AddToDoState extends State<AddToDo> {
   Widget categorySelect(String label, int color) {
     return InkWell(
       onTap: () {
-        setState(() {
-          category = label;
-        });
+        setState(
+          () {
+            category = label;
+          },
+        );
       },
       child: Chip(
         backgroundColor: category == label ? Colors.white : Color(color),
@@ -514,7 +533,7 @@ class _AddToDoState extends State<AddToDo> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        labelPadding: EdgeInsets.symmetric(
+        labelPadding: const EdgeInsets.symmetric(
           horizontal: 17,
           vertical: 3.8,
         ),
@@ -527,16 +546,16 @@ class _AddToDoState extends State<AddToDo> {
       height: 55,
       width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(
-        color: Color(0xff2a2e3d),
+        color: const Color(0xff2a2e3d),
         borderRadius: BorderRadius.circular(15),
       ),
       child: TextFormField(
         controller: _titleController,
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.white,
           fontSize: 17,
         ),
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           border: InputBorder.none,
           hintText: "Task Title",
           hintStyle: TextStyle(
@@ -555,36 +574,11 @@ class _AddToDoState extends State<AddToDo> {
   Widget label(String label) {
     return Text(
       label,
-      style: TextStyle(
+      style: const TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.w600,
           fontSize: 16.5,
           letterSpacing: 0.2),
-    );
-  }
-
-  Future<void> scheduleNotification(DateTime scheduledDate) async {
-    print("Current time: ${DateTime.now()}");
-    print("Scheduled time: ${scheduledDate}");
-
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      0,
-      'Deadline Reminder',
-      'Your task "${_titleController.text}" is due now!',
-      tz.TZDateTime.from(scheduledDate, tz.local),
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'general_notifications',
-          'General Notifications',
-          channelDescription: 'Receive all general notifications from the app.',
-          importance: Importance.high,
-          priority: Priority.high,
-          playSound: true,
-        ),
-      ),
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.dateAndTime,
     );
   }
 }

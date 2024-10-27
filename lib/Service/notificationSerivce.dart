@@ -3,7 +3,7 @@ import "package:timezone/timezone.dart" as tz;
 import "package:timezone/data/latest_all.dart" as tz;
 import "package:timezone/timezone.dart";
 
-class NotificationHelper {
+class NotificationService {
   static final FlutterLocalNotificationsPlugin _notification = FlutterLocalNotificationsPlugin();
 
   static Future<void> init() async {
@@ -28,7 +28,6 @@ class NotificationHelper {
   );
 
   var notificationDetails = NotificationDetails(android: androidDetails);
-
   await _notification.zonedSchedule(
     0, 
     title, 
@@ -39,5 +38,4 @@ class NotificationHelper {
     androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
   );
 }
-
 }

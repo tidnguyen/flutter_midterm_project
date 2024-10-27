@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_midterm_project/Service/Auth_Service.dart';
-import 'package:flutter_midterm_project/pages/Home.dart';
+import 'package:flutter_midterm_project/Service/authService.dart';
+import 'package:flutter_midterm_project/pages/homePage.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
-class SignIn extends StatefulWidget {
-  const SignIn({super.key});
+class SignInPage extends StatefulWidget {
+  const SignInPage({super.key});
 
   @override
-  State<SignIn> createState() => _SignInState();
+  State<SignInPage> createState() => _SignInPageState();
 }
 
-class _SignInState extends State<SignIn> {
+class _SignInPageState extends State<SignInPage> {
   firebase_auth.FirebaseAuth firebaseAuth = firebase_auth.FirebaseAuth.instance;
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool circular = false;
   AuthService authService = AuthService();
 
@@ -22,13 +22,13 @@ class _SignInState extends State<SignIn> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        child: Container(
+        child: SizedBox(
           height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
+              const Text(
                 "Sign In",
                 style: TextStyle(
                   fontSize: 35,
@@ -36,45 +36,55 @@ class _SignInState extends State<SignIn> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
-              ButtonItem("assets/google.svg", "Continue with Google", 25, () {
-                authService.googleSignIn(context);
-              }),
-              SizedBox(
+              buttonItem(
+                "assets/google.svg",
+                "Continue with Google",
+                25,
+                () {
+                  authService.googleSignIn(context);
+                },
+              ),
+              const SizedBox(
                 height: 15,
               ),
-              ButtonItem("assets/phone.svg", "Continue with Phone", 30, (){}),
-              SizedBox(
+              buttonItem("assets/phone.svg", "Continue with Phone", 30, () {}),
+              const SizedBox(
                 height: 15,
               ),
-              ButtonItem("assets/ano.svg", "Continue Anonymously", 30, () async {
-                authService.anonymousSignIn(context);
-               }),
-              SizedBox(
+              buttonItem(
+                "assets/ano.svg",
+                "Continue Anonymously",
+                30,
+                () async {
+                  authService.anonymousSignIn(context);
+                },
+              ),
+              const SizedBox(
                 height: 15,
               ),
-              Text(
+              const Text(
                 "Or",
                 style: TextStyle(fontSize: 18),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 15,
               ),
               textItem("Email...", _emailController, false),
-              SizedBox(
+              const SizedBox(
                 height: 15,
               ),
               textItem("Password...", _passwordController, true),
-              SizedBox(
+              const SizedBox(
                 height: 30,
               ),
               colorButton(),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
@@ -87,10 +97,10 @@ class _SignInState extends State<SignIn> {
                   ),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
-              Text(
+              const Text(
                 "Forgot Password",
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
@@ -105,26 +115,23 @@ class _SignInState extends State<SignIn> {
     return InkWell(
       onTap: () async {
         try {
-          firebase_auth.UserCredential userCredential =
-              await firebaseAuth.signInWithEmailAndPassword(
-                  email: _emailController.text,
-                  password: _passwordController.text);
-            
-          String uid = userCredential.user?.uid ?? '';
-          print(userCredential.user?.email);
-          setState(() {
-            circular = false;
-          });
+          setState(
+            () {
+              circular = false;
+            },
+          );
           Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (builder) => Home()),
+              MaterialPageRoute(builder: (builder) => const HomePage()),
               (route) => false);
         } catch (e) {
           final snackBar = SnackBar(content: Text(e.toString()));
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
-          setState(() {
-            circular = false;
-          });
+          setState(
+            () {
+              circular = false;
+            },
+          );
         }
       },
       child: Container(
@@ -132,7 +139,7 @@ class _SignInState extends State<SignIn> {
         height: 60,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(colors: [
+          gradient: const LinearGradient(colors: [
             Color(0xfffd746c),
             Color(0xffff9068),
             Color(0xfffd746c)
@@ -140,8 +147,8 @@ class _SignInState extends State<SignIn> {
         ),
         child: Center(
           child: circular
-              ? CircularProgressIndicator()
-              : Text(
+              ? const CircularProgressIndicator()
+              : const Text(
                   "Sign In",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
                 ),
@@ -150,10 +157,11 @@ class _SignInState extends State<SignIn> {
     );
   }
 
-  Widget ButtonItem(String imagepath, String buttonName, double size, VoidCallback onTap) {
+  Widget buttonItem(
+      String imagepath, String buttonName, double size, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      child: Container(
+      child: SizedBox(
         width: MediaQuery.of(context).size.width - 60,
         height: 60,
         child: Card(
@@ -161,7 +169,7 @@ class _SignInState extends State<SignIn> {
           elevation: 8,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
-            side: BorderSide(
+            side: const BorderSide(
               width: 1,
               color: Colors.grey,
             ),
@@ -174,10 +182,10 @@ class _SignInState extends State<SignIn> {
                 height: size,
                 width: size,
               ),
-              SizedBox(width: 15),
+              const SizedBox(width: 15),
               Text(
                 buttonName,
-                style: TextStyle(fontSize: 17),
+                style: const TextStyle(fontSize: 17),
               )
             ],
           ),
@@ -188,26 +196,26 @@ class _SignInState extends State<SignIn> {
 
   Widget textItem(
       String labelText, TextEditingController controller, bool obscureText) {
-    return Container(
+    return SizedBox(
       width: MediaQuery.of(context).size.width - 70,
       height: 55,
       child: TextFormField(
         controller: controller,
         obscureText: obscureText,
-        style: TextStyle(fontSize: 17),
+        style: const TextStyle(fontSize: 17),
         decoration: InputDecoration(
           labelText: labelText,
-          labelStyle: TextStyle(fontSize: 17),
+          labelStyle: const TextStyle(fontSize: 17),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               width: 1.5,
               color: Colors.amber,
             ),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               width: 1,
               color: Colors.grey,
             ),

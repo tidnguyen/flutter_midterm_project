@@ -1,35 +1,30 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_midterm_project/pages/Home.dart';
+import 'package:flutter_midterm_project/pages/homePage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
-  GoogleSignIn _googleSignIn = GoogleSignIn(
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: [
       'email',
       'https://www.googleapis.com/auth/contacts.readonly',
     ],
   );
-  FirebaseAuth _auth = FirebaseAuth.instance;
-  final storage = new FlutterSecureStorage();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final storage = FlutterSecureStorage();
 
   Future<void> anonymousSignIn(BuildContext context) async {
     try {
-      // Perform anonymous sign-in
       UserCredential userCredential = await _auth.signInAnonymously();
-      String uid = userCredential.user?.uid ?? '';
-      // Store token and user data, if required
       await storeTokenAndData(userCredential);
 
-      // Navigate to the Home page
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (builder) => Home()),
+        MaterialPageRoute(builder: (builder) => const HomePage()),
         (route) => false,
       );
     } catch (e) {
-      // Show error message in a snackbar
       final snackBar = SnackBar(content: Text(e.toString()));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
@@ -50,15 +45,13 @@ class AuthService {
         try {
           UserCredential userCredential =
               await _auth.signInWithCredential(credential);
-          String uid = userCredential.user?.uid ?? '';
-          
           storeTokenAndData(userCredential);
           Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (builder) => Home()),
+              MaterialPageRoute(builder: (builder) => HomePage()),
               (route) => false);
         } catch (e) {
-          final snackBar = SnackBar(content: Text("Not Able to Sign In"));
+          const snackBar = SnackBar(content: Text("Not Able to Sign In"));
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
         }
       } else {}
@@ -89,19 +82,18 @@ class AuthService {
 
   Future<void> verifyPhoneNumber(
       String phoneNumber, BuildContext context, Function setData) async {
-    PhoneVerificationCompleted verificationCompleted =
-        (PhoneAuthCredential PhoneAuthCredential) async {
+    Future<void> verificationCompleted(PhoneAuthCredential credential) async {
       showSnackBar(context, "Verification Completed");
-    };
-    PhoneVerificationFailed verificationFailed =
-        (FirebaseAuthException exception) {
-      showSnackBar(context, exception.toString());
-    };
+    }
 
-    PhoneCodeAutoRetrievalTimeout codeAutoRetrievalTimeout =
-        (String verificationID) {
+    void verificationFailed(FirebaseAuthException exception) {
+      showSnackBar(context, exception.toString());
+    }
+
+    void codeAutoRetrievalTimeout(String verificationID) {
       showSnackBar(context, "Time out");
-    };
+    }
+
     try {
       await _auth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
@@ -126,11 +118,12 @@ class AuthService {
 
       UserCredential userCredential =
           await _auth.signInWithCredential(credential);
-      String uid = userCredential.user?.uid ?? '';
-      
+
       storeTokenAndData(userCredential);
-      Navigator.pushAndRemoveUntil(context,
-          MaterialPageRoute(builder: (builder) => Home()), (route) => false);
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (builder) => const HomePage()),
+          (route) => false);
       showSnackBar(context, "logged In");
     } catch (e) {
       showSnackBar(context, e.toString());
