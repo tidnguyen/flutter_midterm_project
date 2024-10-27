@@ -3,11 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_midterm_project/Custom/toDoCard.dart';
-import 'package:flutter_midterm_project/Service/authService.dart';
-import 'package:flutter_midterm_project/Service/notificationSerivce.dart';
-import 'package:flutter_midterm_project/pages/addToDoPage.dart';
-import 'package:flutter_midterm_project/pages/profilePage.dart';
-import 'package:flutter_midterm_project/pages/viewDataPage.dart';
+import 'package:flutter_midterm_project/Service/auth_service.dart';
+import 'package:flutter_midterm_project/Service/notification_serivce.dart';
+import 'package:flutter_midterm_project/pages/addtodo_page.dart';
+import 'package:flutter_midterm_project/pages/profile_page.dart';
+import 'package:flutter_midterm_project/pages/viewdata_page.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

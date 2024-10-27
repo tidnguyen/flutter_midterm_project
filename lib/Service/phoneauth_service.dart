@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_midterm_project/Service/authService.dart';
+import 'package:flutter_midterm_project/Service/auth_service.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 
 class PhoneAuthService extends StatefulWidget {

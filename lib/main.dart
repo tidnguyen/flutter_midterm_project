@@ -1,8 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_midterm_project/pages/signUpPage.dart';
-import 'package:flutter_midterm_project/Service/notificationSerivce.dart'; 
+import 'package:flutter_midterm_project/pages/signup_page.dart';
+import 'package:flutter_midterm_project/Service/notification_serivce.dart'; 
 import "package:timezone/data/latest_all.dart" as tz;
 
 void main() async {

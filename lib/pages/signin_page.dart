@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_midterm_project/Service/authService.dart';
-import 'package:flutter_midterm_project/pages/homePage.dart';
-import 'package:flutter_midterm_project/Service/phoneAuthService.dart';
-import 'package:flutter_midterm_project/pages/signInPage.dart';
+import 'package:flutter_midterm_project/Service/auth_service.dart';
+import 'package:flutter_midterm_project/pages/home_page.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
-class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key});
+class SignInPage extends StatefulWidget {
+  const SignInPage({super.key});
+
   @override
-  State<SignUpPage> createState() => _SignUpPageState();
+  State<SignInPage> createState() => _SignInPageState();
 }
 
-class _SignUpPageState extends State<SignUpPage> {
+class _SignInPageState extends State<SignInPage> {
   firebase_auth.FirebaseAuth firebaseAuth = firebase_auth.FirebaseAuth.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -30,7 +29,7 @@ class _SignUpPageState extends State<SignUpPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                "Sign Up",
+                "Sign In",
                 style: TextStyle(
                   fontSize: 35,
                   color: Colors.black,
@@ -44,24 +43,14 @@ class _SignUpPageState extends State<SignUpPage> {
                 "assets/google.svg",
                 "Continue with Google",
                 25,
-                () async {
-                  await authService.googleSignIn(context);
+                () {
+                  authService.googleSignIn(context);
                 },
               ),
               const SizedBox(
                 height: 15,
               ),
-              buttonItem(
-                "assets/phone.svg",
-                "Continue with Phone",
-                30,
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (builder) => const PhoneAuthService()),
-                  );
-                },
-              ),
+              buttonItem("assets/phone.svg", "Continue with Phone", 30, () {}),
               const SizedBox(
                 height: 15,
               ),
@@ -95,29 +84,26 @@ class _SignUpPageState extends State<SignUpPage> {
               const SizedBox(
                 height: 20,
               ),
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    "If you already have an Account? ",
+                  Text(
+                    "If you don't have an Account? ",
                     style: TextStyle(fontSize: 18),
                   ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (builder) => const SignInPage()),
-                        (route) => false,
-                      );
-                    },
-                    child: const Text(
-                      "Login",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
+                  Text(
+                    "SignUp",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
-              )
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              const Text(
+                "Forgot Password",
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
         ),
@@ -128,34 +114,24 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget colorButton() {
     return InkWell(
       onTap: () async {
-        setState(
-          () {
-            circular = true;
-          },
-        );
         try {
           setState(
             () {
               circular = false;
             },
           );
-          if (mounted) {
-            Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (builder) => const HomePage()),
-                (route) => false);
-          }
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (builder) => const HomePage()),
+              (route) => false);
         } catch (e) {
-          if (mounted) {
-            final snackBar = SnackBar(content: Text(e.toString()));
-
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-            setState(
-              () {
-                circular = false;
-              },
-            );
-          }
+          final snackBar = SnackBar(content: Text(e.toString()));
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          setState(
+            () {
+              circular = false;
+            },
+          );
         }
       },
       child: Container(
@@ -163,15 +139,17 @@ class _SignUpPageState extends State<SignUpPage> {
         height: 60,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          gradient: const LinearGradient(
-            colors: [Color(0xfffd746c), Color(0xffff9068), Color(0xfffd746c)],
-          ),
+          gradient: const LinearGradient(colors: [
+            Color(0xfffd746c),
+            Color(0xffff9068),
+            Color(0xfffd746c)
+          ]),
         ),
         child: Center(
           child: circular
               ? const CircularProgressIndicator()
               : const Text(
-                  "Sign Up",
+                  "Sign In",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
                 ),
         ),
