@@ -64,7 +64,6 @@ Future<List<Reference>> getTaskImages(String taskID) async {
       String downloadURL = await ref.getDownloadURL(); 
       return downloadURL; 
     } catch (e) {
-      print("Error getting download URL: $e");
       return null; 
     }
   }
@@ -75,7 +74,6 @@ Future<List<Reference>> getTaskImages(String taskID) async {
       String downloadURL = await ref.getDownloadURL(); 
       return downloadURL; 
     } catch (e) {
-      print("Error getting download URL: $e");
       return null; 
     }
   }
