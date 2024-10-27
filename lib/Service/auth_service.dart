@@ -12,21 +12,24 @@ class AuthService {
     ],
   );
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final storage = FlutterSecureStorage();
+  final storage = const FlutterSecureStorage();
 
   Future<void> anonymousSignIn(BuildContext context) async {
     try {
       UserCredential userCredential = await _auth.signInAnonymously();
       await storeTokenAndData(userCredential);
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (builder) => const HomePage()),
-        (route) => false,
-      );
+      if (context.mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (builder) => const HomePage()),
+          (route) => false,
+        );
+      }
     } catch (e) {
-      final snackBar = SnackBar(content: Text(e.toString()));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      if (context.mounted) {
+        final snackBar = SnackBar(content: Text(e.toString()));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     }
   }
 
@@ -46,18 +49,24 @@ class AuthService {
           UserCredential userCredential =
               await _auth.signInWithCredential(credential);
           storeTokenAndData(userCredential);
-          Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (builder) => const HomePage()),
-              (route) => false);
+          if (context.mounted) {
+            Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (builder) => const HomePage()),
+                (route) => false);
+          }
         } catch (e) {
           const snackBar = SnackBar(content: Text("Not Able to Sign In"));
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          }
         }
       } else {}
     } catch (e) {
       final snackBar = SnackBar(content: Text(e.toString()));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     }
   }
 
@@ -77,7 +86,9 @@ class AuthService {
       await _googleSignIn.signOut();
       await _auth.signOut();
       await storage.read(key: "token") ?? "";
-    } catch (e) {}
+    } catch (e) {
+      return;
+    }
   }
 
   Future<void> verifyPhoneNumber(
@@ -106,7 +117,9 @@ class AuthService {
         codeAutoRetrievalTimeout: codeAutoRetrievalTimeout,
       );
     } catch (e) {
-      showSnackBar(context, e.toString());
+      if (context.mounted) {
+        showSnackBar(context, e.toString());
+      }
     }
   }
 
@@ -120,13 +133,17 @@ class AuthService {
           await _auth.signInWithCredential(credential);
 
       storeTokenAndData(userCredential);
-      Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (builder) => const HomePage()),
-          (route) => false);
-      showSnackBar(context, "logged In");
+      if (context.mounted) {
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (builder) => const HomePage()),
+            (route) => false);
+        showSnackBar(context, "logged In");
+      }
     } catch (e) {
-      showSnackBar(context, e.toString());
+      if (context.mounted) {
+        showSnackBar(context, e.toString());
+      }
     }
   }
 

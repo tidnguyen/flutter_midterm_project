@@ -58,7 +58,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (builder) => const PhoneAuthService()),
+                    MaterialPageRoute(
+                        builder: (builder) => const PhoneAuthService()),
                   );
                 },
               ),
@@ -106,7 +107,8 @@ class _SignUpPageState extends State<SignUpPage> {
                     onTap: () {
                       Navigator.pushAndRemoveUntil(
                         context,
-                        MaterialPageRoute(builder: (builder) => const SignInPage()),
+                        MaterialPageRoute(
+                            builder: (builder) => const SignInPage()),
                         (route) => false,
                       );
                     },

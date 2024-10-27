@@ -273,8 +273,9 @@ class _AddToDoPageState extends State<AddToDoPage> {
             "images": imageUrls,
             "files": fileUrls,
           });
-
-          Navigator.pop(context);
+          if (mounted) {
+            Navigator.pop(context);
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("User not signed in.")));
@@ -429,7 +430,8 @@ class _AddToDoPageState extends State<AddToDoPage> {
                         ),
                         child: Text(
                           file.path.split('/').last,
-                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 12),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),

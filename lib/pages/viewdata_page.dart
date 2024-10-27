@@ -105,7 +105,10 @@ class _ViewDataPageState extends State<ViewDataPage> {
                               .doc(widget.id)
                               .delete()
                               .then((value) => {
-                                    Navigator.pop(context),
+                                    if (context.mounted)
+                                      {
+                                        Navigator.pop(context),
+                                      }
                                   });
                         },
                         icon: const Icon(

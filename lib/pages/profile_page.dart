@@ -145,9 +145,12 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> signOut(BuildContext context) async {
     try {
       await FirebaseAuth.instance.signOut();
-      // Điều hướng về màn hình đăng nhập sau khi đăng xuất thành công
-      Navigator.pushAndRemoveUntil(context,
-          MaterialPageRoute(builder: (builder) => const SignInPage()), (route) => false);
+      if (context.mounted) {
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (builder) => const SignInPage()),
+            (route) => false);
+      }
     } catch (e) {
       return;
     }
@@ -168,7 +171,9 @@ class _ProfilePageState extends State<ProfilePage> {
         if (image != null) {
           await _saveImagePath(image!.path);
         }
-        Navigator.pop(context, image?.path);
+        if (mounted) {
+          Navigator.pop(context, image?.path);
+        }
       },
       child: Container(
         height: 40,

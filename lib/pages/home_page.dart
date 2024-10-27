@@ -20,7 +20,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   AuthService authService = AuthService();
-  Stream<QuerySnapshot> ?_stream;
+  Stream<QuerySnapshot>? _stream;
   List<Select> selected = [];
   DateTime? selectedDateTime;
   DateTime currentDate = DateTime.now();
@@ -33,19 +33,20 @@ class _HomePageState extends State<HomePage> {
     String? userID = FirebaseAuth.instance.currentUser?.uid;
     if (userID != null) {
       _stream = FirebaseFirestore.instance
-        .collection("Todo")
-        .where("uid", isEqualTo: userID)
-        .snapshots();
+          .collection("Todo")
+          .where("uid", isEqualTo: userID)
+          .snapshots();
     } else {
-      _stream = const Stream.empty(); 
-  }
+      _stream = const Stream.empty();
+    }
   }
 
   Future<void> _loadSavedImage() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      savedImagePath = prefs.getString('profile_image');
-    },
+    setState(
+      () {
+        savedImagePath = prefs.getString('profile_image');
+      },
     );
   }
 
@@ -115,17 +116,18 @@ class _HomePageState extends State<HomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (builder) => const AddToDoPage()),
-                ).then((_) {
-                  setState(() {
-                    currentDate = DateTime.now();
-                  });
-                },
+                ).then(
+                  (_) {
+                    setState(() {
+                      currentDate = DateTime.now();
+                    });
+                  },
                 );
               },
               child: Container(
                 height: 52,
                 width: 52,
-                decoration: const  BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(colors: [
                     Colors.indigoAccent,
@@ -219,12 +221,13 @@ class _HomePageState extends State<HomePage> {
               DateTime? deadline = document["deadline"] != null
                   ? DateTime.fromMicrosecondsSinceEpoch(document["deadline"])
                   : null;
-              String formattedTime = deadline != null ? DateFormat('HH:mm').format(deadline) : '';
-                NotificationService.scheduledNotification(
-                  "Deadline Reminder",
-                  'Your task "${document["title"]}" is due!',
-                  deadline!, 
-                );
+              String formattedTime =
+                  deadline != null ? DateFormat('HH:mm').format(deadline) : '';
+              NotificationService.scheduledNotification(
+                "Deadline Reminder",
+                'Your task "${document["title"]}" is due!',
+                deadline!,
+              );
               return InkWell(
                 onTap: () {
                   Navigator.push(
