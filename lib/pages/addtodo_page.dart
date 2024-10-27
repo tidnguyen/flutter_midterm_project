@@ -240,12 +240,14 @@ class _AddToDoPageState extends State<AddToDoPage> {
     );
   }
 
-  final String? userID = FirebaseAuth.instance.currentUser?.uid;
+
 
   Widget button() {
     return InkWell(
       onTap: () async {
+        String? userID = FirebaseAuth.instance.currentUser?.uid;
         if (userID != null) {
+          
           List<String> imageUrls = await Future.wait(
             _uploadedFiles.map((ref) => ref.getDownloadURL()),
           );
@@ -273,7 +275,6 @@ class _AddToDoPageState extends State<AddToDoPage> {
             "images": imageUrls,
             "files": fileUrls,
           });
-      
             Navigator.pop(context);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(

@@ -14,8 +14,8 @@ class SignInPage extends StatefulWidget {
 
 class _SignInPageState extends State<SignInPage> {
   firebase_auth.FirebaseAuth firebaseAuth = firebase_auth.FirebaseAuth.instance;
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
   bool circular = false;
   AuthService authService = AuthService();
 
@@ -96,7 +96,7 @@ class _SignInPageState extends State<SignInPage> {
                     onTap: () {
                       Navigator.pushAndRemoveUntil(
                         context, 
-                        MaterialPageRoute(builder: (builder) => const SignUpPage()),
+                        MaterialPageRoute(builder: (builder) => SignUpPage()),
                           (route) => false);
                     },
                     child: Text(
@@ -128,6 +128,15 @@ class _SignInPageState extends State<SignInPage> {
     return InkWell(
       onTap: () async {
         try {
+          firebase_auth.UserCredential userCredential =
+              await firebaseAuth.signInWithEmailAndPassword(
+                  email: _emailController.text,
+                  password: _passwordController.text);
+            
+          String uid = userCredential.user?.uid ?? '';
+          setState(() {
+            circular = false;
+          });
           setState(
             () {
               circular = false;

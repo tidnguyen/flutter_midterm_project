@@ -18,13 +18,12 @@ class AuthService {
     try {
       UserCredential userCredential = await _auth.signInAnonymously();
       await storeTokenAndData(userCredential);
-      if (context.mounted) {
+      
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (builder) => const HomePage()),
           (route) => false,
         );
-      }
     } catch (e) {
       if (context.mounted) {
         final snackBar = SnackBar(content: Text(e.toString()));
@@ -49,24 +48,24 @@ class AuthService {
           UserCredential userCredential =
               await _auth.signInWithCredential(credential);
           storeTokenAndData(userCredential);
-          if (context.mounted) {
+         
             Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (builder) => const HomePage()),
                 (route) => false);
-          }
+          
         } catch (e) {
           const snackBar = SnackBar(content: Text("Not Able to Sign In"));
-          if (context.mounted) {
+     
             ScaffoldMessenger.of(context).showSnackBar(snackBar);
-          }
+         
         }
       } else {}
     } catch (e) {
       final snackBar = SnackBar(content: Text(e.toString()));
-      if (context.mounted) {
+  
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      }
+
     }
   }
 
